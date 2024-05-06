@@ -48,8 +48,8 @@ def affichage(grid):
         
         
     
-def set_grid(grid: Grid) -> Grid:
+#def set_grid(grid: Grid) -> Grid:
     
     
 
-affichage(create_grid(6))
+affichage(create_grid(3))
