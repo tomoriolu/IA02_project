@@ -55,8 +55,25 @@ def pprint(grid):
         
         
     
-#def set_grid(grid: Grid) -> Grid:
+def set_grid(grid: Grid) -> Grid:
+    #premier joueur
+    n: int = len(grid)//2
+    for i in range(n+2):
+        for j in range(n+i-1, n*2+1):
+            if grid[i][j]!=-1:
+                grid[i][j] = 1
+    for i in range(n,len(grid)):
+        for j in range(0, i-n+2 ):
+            if grid[i][j]!=-1:
+                grid[i][j] = 2
+    
+        
+    return(grid)      
+    #for i in range(len((grid//2)+1):
+        
     
     
 
-pprint(create_grid(6))
+pprint(create_grid(5))
+print()
+pprint(set_grid(create_grid(5)))
