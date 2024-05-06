@@ -3,9 +3,9 @@ import random
 import ast
 import time
 
-Grid = tuple[tuple[int, ...], ...] #tuple non mutable donc peut etre clé d'un dico : utilisé pour coder des jeux
+Grid = Tuple[Tuple[int, ...], ...] #tuple non mutable donc peut etre clé d'un dico : utilisé pour coder des jeux
 State = Grid
-Action = tuple[int, int]
+Action = Tuple[int, int]
 Player = int
 Score = float
 Strategy = Callable[[State, Player], Action]
@@ -43,6 +43,13 @@ def create_grid(n: int) -> Grid:
 def affichage(grid):
     for i in grid:
         print(i)
+
+
+def pprint(grid):
+    for line in grid:
+        for ele in line:
+            print(f" {ele:2d} ", end="")
+        print()
             
 
         
@@ -52,4 +59,4 @@ def affichage(grid):
     
     
 
-affichage(create_grid(3))
+pprint(create_grid(6))
