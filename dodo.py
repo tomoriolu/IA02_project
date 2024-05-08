@@ -1,7 +1,9 @@
+import collections
 from typing import Callable, List, Dict, Tuple
 import random
 import ast
 import time
+import math
 
 Grid = Tuple[Tuple[int, ...], ...] #tuple non mutable donc peut etre clé d'un dico : utilisé pour coder des jeux
 State = Grid
@@ -23,18 +25,18 @@ Strategy = Callable[[State, Player], Action]
     
 def create_grid(n: int) -> Grid:
     grid: list = []
-    for i in range(2*n+1):
+    for i in range(2*n-1):
         line: list[int] = []
-        for j in range(2*n+1):
+        for j in range(2*n-1):
             line.append(-1)
         grid.append(line)
-    distance: int = n
-    for i in range(n+1):
-        for j in range(distance,2*n+1):
+    distance: int = n-1
+    for i in range(n):
+        for j in range(distance,2*n-1):
             grid[i][j]=0
         distance-=1
-    distance: int = 2*n
-    for i in range(n+1,2*n+1):
+    distance: int = 2*n-1
+    for i in range(n-1,distance):
         for j in range(0,distance):
             grid[i][j]=0
         distance-=1
@@ -69,11 +71,14 @@ def set_grid(grid: Grid) -> Grid:
     
         
     return(grid)      
-    #for i in range(len((grid//2)+1):
-        
+    
     
     
 
-pprint(create_grid(5))
+
+    
+    
+
+pprint(create_grid(7))
 print()
-pprint(set_grid(create_grid(5)))
+pprint(set_grid(create_grid(7)))
