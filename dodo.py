@@ -21,19 +21,16 @@ State = list[tuple[Cell, Player]] # État du jeu pour la boucle de jeu
 Score = int
 Time = int
 Strategy = Callable[[State, Player], Action]
-
+Grid = list[list[int]]
+state = []
+cells_joueur_2 : list[Cell] = []
 #def hex_to_tab(i: int, j: int)->Tuple(int,int):
     
 #def tab_to_hexs(i: int, j: int)->Tuple(int,int):
 
-#def grid_tuple_to_grid_list(grid: Grid) -> list[list[int]] :
-    
-#def grid_list_to_grid_tuple(grid: list[list[int]]) -> Grid : 
-
-
 #def actions(grid: State) -> Grid:
     
-def create_grid(n: int) -> Grid:
+def create_grid(n: int = 7) -> Grid:
     grid: list = []
     for i in range(2*n-1):
         line: list[int] = []
@@ -52,10 +49,6 @@ def create_grid(n: int) -> Grid:
         distance-=1
     return grid
 
-def affichage(grid):
-    for i in grid:
-        print(i)
-
 
 def pprint(grid):
     for line in grid:
@@ -63,32 +56,57 @@ def pprint(grid):
             print(f" {ele:2d} ", end="")
         print()
             
+def state_to_grid(state: State) -> Grid:
+    grid : Grid = create_grid()
+    for cell, player in state:
+        #print(cell)
+        #print(player)
+        grid[(cell[0])][(cell[1])] = player
+    return grid
+        
+test: State = [((1, 5), 1), ((0, 7), 1), ((0, 8), 1), ((0, 9), 1), ((0, 10), 1), ((0, 11), 1), ((0, 12), 1), ((1, 6), 1), ((1, 7), 1), ((1, 8), 1), ((1, 9), 1), ((1, 10), 1), ((1, 11), 1), ((1, 12), 1), ((2, 7), 1), ((2, 8), 1), ((2, 9), 1), ((2, 10), 1), ((2, 11), 1), ((2, 12), 1), ((3, 8), 1), ((3, 9), 1), ((3, 10), 1), ((3, 11), 1), ((3, 12), 1), ((4, 9), 1), ((4, 10), 1), ((4, 11), 1), ((4, 12), 1), ((5, 10), 1), ((5, 11), 1), ((5, 12), 1), ((6, 11), 1), ((6, 12), 1), ((6, 0), 2), ((6, 1), 2), ((7, 0), 2), ((7, 1), 2), ((7, 2), 2), ((8, 0), 2), ((8, 1), 2), ((8, 2), 2), ((8, 3), 2), ((9, 0), 2), ((9, 1), 2), ((9, 2), 2), ((9, 3), 2), ((9, 4), 2), ((10, 0), 2), ((10, 1), 2), ((10, 2), 2), ((10, 3), 2), ((10, 4), 2), ((10, 5), 2), ((11, 0), 2), ((11, 1), 2), ((11, 2), 2), ((11, 3), 2), ((11, 4), 2), ((11, 5), 2), ((11, 6), 2), ((12, 0), 2), ((12, 1), 2), ((12, 2), 2), ((12, 3), 2), ((12, 4), 2), ((12, 5), 2), ((12, 6), 2)]
 
-        
-        
-    
-def set_grid(grid: Grid) -> Grid:
+def set_state(grid : Grid) -> State:
     #premier joueur
     n: int = len(grid)//2
     for i in range(n+2):
         for j in range(n+i-1, n*2+1):
             if grid[i][j]!=-1:
                 grid[i][j] = 1
+                state.append(((i,j),1))
+    #print(state)
+                
     for i in range(n,len(grid)):
         for j in range(0, i-n+2 ):
             if grid[i][j]!=-1:
                 grid[i][j] = 2
-    
-        
+                state.append(((i,j),2))
+    print(state)
     return(grid)      
     
+def legals_dodo(state: State, player: Player) -> list[ActionDodo] :
+    actions: list[ActionDodo] = []
+    print(state)
+    grid = state_to_grid(state)
+    for cell, joueur in state:
+        if player==1:
+            if player==joueur:
+                if grid[cell[0] + 1][cell[1] - 1] == 0: #mouvement en bas a gauche
+                    actions.append(((cell[0],cell[1]),(cell[0]+1,cell[1]-1)))
+                if grid[cell[0]][cell[1]-1]==0: #mouvement a gauche
+                    actions.append(((cell[0],cell[1]),(cell[0],cell[1]-1)))
+                if grid[cell[0]+1][cell[1]]==0: #mouvement en bas
+                    actions.append(((cell[0],cell[1]),(cell[0]+1,cell[1])))
+    pprint(grid)
+    return actions
+    
+def jouer_action(state: State, action: Action)-> State:
+    print("test")
     
     
 
-#test
-    
-    
-
-pprint(create_grid(7))
-print()
-pprint(set_grid(create_grid(7)))
+#pprint(create_grid(7))
+#print()
+#pprint(state_to_grid(test))
+#set_state(create_grid())
+print(legals_dodo(test,1))
