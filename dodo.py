@@ -173,16 +173,6 @@ def strategy_joueur(state: State, player: Player) -> Action:
         print("Ce coup n'est pas possible")
 
 
-
-# def play_dodo(state: State, player: Player, action: ActionDodo) -> State:
-#     for i in range(len(state)):
-#         if state[i][0] == action[0]:
-#             state[i][1] = 0
-#         elif state[i][0] == action[1]:
-#             state[i][1] = player
-#     return state
-
-
 def play_dodo(state: State, player: Player, action: ActionDodo) -> State:
     grid = state_to_grid(state)
     grid[action[0][0]][action[0][1]] = 0
@@ -211,7 +201,7 @@ def dodo(state: State, strategy_1: Strategy, strategy_2: Strategy, debug: bool =
         return result
     return result
 
-dodo(grid_to_state(set_state(create_grid(3))), strategy_joueur, strategy_joueur)
+dodo(grid_to_state(set_state(create_grid(31))), strategy_joueur, strategy_joueur)
 
 # print(legals_dodo(grid_to_state(set_state(state_to_grid(grid_to_state(create_grid(3))))), 1))
 
