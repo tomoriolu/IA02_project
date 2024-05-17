@@ -50,14 +50,23 @@ def create_grid(n: int = 7) -> Grid:
     return grid
 
 
+
+
 def pprint(grid):
     for line in grid:
         for ele in line:
             print(f" {ele:2d} ", end="")
         print()
+
+def size_state(state: State) -> int:
+    l = len(state)
+    q = math.sqrt(l)
+    return q // 2 + 1
+
             
 def state_to_grid(state: State) -> Grid:
-    grid : Grid = create_grid()
+    n : int = int(size_state(state))
+    grid : Grid = create_grid(n)
     for cell, player in state:
         #print(cell)
         #print(player)
@@ -119,8 +128,14 @@ def legals_dodo(state: State, player: Player) -> list[ActionDodo] :
     return actions
 
 
-print(legals_dodo(grid_to_state(set_state(state_to_grid(grid_to_state(create_grid())))), 1))
+print(legals_dodo(grid_to_state(set_state(state_to_grid(grid_to_state(create_grid(3))))), 1))
 
+
+
+# print(grid_to_state(create_grid(3)))
+# pprint(state_to_grid(grid_to_state(create_grid(3))))
+
+# print(type(int(size_state(grid_to_state(create_grid(3))))))
     
 def jouer_action(state: State, action: Action)-> State:
     print("test")
