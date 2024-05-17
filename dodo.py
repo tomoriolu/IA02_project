@@ -124,7 +124,7 @@ def legals_dodo(state: State, player: Player) -> list[ActionDodo] :
                     actions.append(((cell[0], cell[1]), (cell[0], cell[1]+1)))
                 if grid[cell[0]-1][cell[1]] == 0: # en haut
                     actions.append(((cell[0], cell[1]), (cell[0]-1, cell[1])))
-    pprint(grid)
+    # pprint(grid)
     return actions
 
 
@@ -142,7 +142,7 @@ def final_dodo(state: State) -> bool:
     else: 
         return False
 
-def score_dodo():
+def score_dodo(state: State) -> int:
     """renvoi le score d'une grille finale"""
     if plus_action(state, 1) and plus_action(state, 2): #je sais pas si c'est possible qu'il y ait égalité
         return 0
@@ -152,8 +152,68 @@ def score_dodo():
         return -1
     
 
+def strategy_joueur(state: State, player: Player) -> Action:
+    test: bool = False
+    grid: Grid = state_to_grid(state)
+    print(f"À vous de jouer, joueur {player}")
+    while not(test):
+        pprint(grid)
+        print("Choix de la boule à déplacer")
+        print("Ligne : ", end="")
+        l1 = int(input())
+        print("Colonne :", end="")
+        c1 = int(input())
+        print("Choix de la destination")
+        print("Ligne : ", end="")
+        l2 = int(input())
+        print("Colonne :", end="")
+        c2 = int(input())
+        if ((l1,c1), (l2, c2)) in legals_dodo(state, player):
+            return ((l1,c1), (l2, c2))
+        print("Ce coup n'est pas possible")
 
-print(legals_dodo(grid_to_state(set_state(state_to_grid(grid_to_state(create_grid(3))))), 1))
+
+
+# def play_dodo(state: State, player: Player, action: ActionDodo) -> State:
+#     for i in range(len(state)):
+#         if state[i][0] == action[0]:
+#             state[i][1] = 0
+#         elif state[i][0] == action[1]:
+#             state[i][1] = player
+#     return state
+
+
+def play_dodo(state: State, player: Player, action: ActionDodo) -> State:
+    grid = state_to_grid(state)
+    grid[action[0][0]][action[0][1]] = 0
+    grid[action[1][0]][action[1][1]] = player
+    return grid_to_state(grid)
+
+
+def dodo(state: State, strategy_1: Strategy, strategy_2: Strategy, debug: bool = False) -> Score:
+    if not debug:
+        player : int = 1
+        while not(final_dodo(state)):
+            print("---------------------------")
+            if player == 1:
+                state = play_dodo(state, player, strategy_1(state, player))
+                player = 2
+            else:
+                state = play_dodo(state, player, strategy_2(state, player))
+                player = 1
+        result: int = score_dodo(state)
+        print("---------------------------")
+        if result == 0:
+            print("Match nul")
+        else:
+            print("Le vainqueur est le joueur {result}")
+        pprint(state_to_grid(state))
+        return result
+    return result
+
+dodo(grid_to_state(set_state(create_grid(3))), strategy_joueur, strategy_joueur)
+
+# print(legals_dodo(grid_to_state(set_state(state_to_grid(grid_to_state(create_grid(3))))), 1))
 
 
 
