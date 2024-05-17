@@ -66,7 +66,15 @@ def state_to_grid(state: State) -> Grid:
         
 test: State = [((1, 5), 1), ((0, 7), 1), ((0, 8), 1), ((0, 9), 1), ((0, 10), 1), ((0, 11), 1), ((0, 12), 1), ((1, 6), 1), ((1, 7), 1), ((1, 8), 1), ((1, 9), 1), ((1, 10), 1), ((1, 11), 1), ((1, 12), 1), ((2, 7), 1), ((2, 8), 1), ((2, 9), 1), ((2, 10), 1), ((2, 11), 1), ((2, 12), 1), ((3, 8), 1), ((3, 9), 1), ((3, 10), 1), ((3, 11), 1), ((3, 12), 1), ((4, 9), 1), ((4, 10), 1), ((4, 11), 1), ((4, 12), 1), ((5, 10), 1), ((5, 11), 1), ((5, 12), 1), ((6, 11), 1), ((6, 12), 1), ((6, 0), 2), ((6, 1), 2), ((7, 0), 2), ((7, 1), 2), ((7, 2), 2), ((8, 0), 2), ((8, 1), 2), ((8, 2), 2), ((8, 3), 2), ((9, 0), 2), ((9, 1), 2), ((9, 2), 2), ((9, 3), 2), ((9, 4), 2), ((10, 0), 2), ((10, 1), 2), ((10, 2), 2), ((10, 3), 2), ((10, 4), 2), ((10, 5), 2), ((11, 0), 2), ((11, 1), 2), ((11, 2), 2), ((11, 3), 2), ((11, 4), 2), ((11, 5), 2), ((11, 6), 2), ((12, 0), 2), ((12, 1), 2), ((12, 2), 2), ((12, 3), 2), ((12, 4), 2), ((12, 5), 2), ((12, 6), 2)]
 
-def set_state(grid : Grid) -> State:
+
+def grid_to_state(grid: Grid) -> State:
+    state : State = []
+    for i in range(len(grid)):
+        for j in range(len(grid)):
+            state.append(((i, j), grid[i][j]))
+    return state
+
+def set_state(grid : Grid) -> Grid:
     #premier joueur
     n: int = len(grid)//2
     for i in range(n+2):
@@ -81,12 +89,14 @@ def set_state(grid : Grid) -> State:
             if grid[i][j]!=-1:
                 grid[i][j] = 2
                 state.append(((i,j),2))
-    print(state)
+    #print(state)
     return(grid)      
+
+# print(set_state(state_to_grid(grid_to_state(create_grid()))))
     
 def legals_dodo(state: State, player: Player) -> list[ActionDodo] :
     actions: list[ActionDodo] = []
-    print(state)
+    #print(state)
     grid = state_to_grid(state)
     for cell, joueur in state:
         if player==1:
@@ -97,8 +107,20 @@ def legals_dodo(state: State, player: Player) -> list[ActionDodo] :
                     actions.append(((cell[0],cell[1]),(cell[0],cell[1]-1)))
                 if grid[cell[0]+1][cell[1]]==0: #mouvement en bas
                     actions.append(((cell[0],cell[1]),(cell[0]+1,cell[1])))
+        elif player==2:
+            if player==joueur:
+                if grid[cell[0]-1][cell[1]+1] == 0: # en haut à droite
+                    actions.append(((cell[0], cell[1]), (cell[0]-1, cell[1]+1)))
+                if grid[cell[0]][cell[1]+1] == 0: # à droite
+                    actions.append(((cell[0], cell[1]), (cell[0], cell[1]+1)))
+                if grid[cell[0]-1][cell[1]] == 0: # en haut
+                    actions.append(((cell[0], cell[1]), (cell[0]-1, cell[1])))
     pprint(grid)
     return actions
+
+
+print(legals_dodo(grid_to_state(set_state(state_to_grid(grid_to_state(create_grid())))), 1))
+
     
 def jouer_action(state: State, action: Action)-> State:
     print("test")
@@ -109,4 +131,10 @@ def jouer_action(state: State, action: Action)-> State:
 #print()
 #pprint(state_to_grid(test))
 #set_state(create_grid())
-print(legals_dodo(test,1))
+# print(legals_dodo(test,1))
+
+#pprint(set_state(create_grid()))
+# print(type(set_state(create_grid())))
+#legals_dodo(set_state(create_grid()), 1)
+
+# state_to_grid(set_state(create_grid()))
