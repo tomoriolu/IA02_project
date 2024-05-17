@@ -128,6 +128,31 @@ def legals_dodo(state: State, player: Player) -> list[ActionDodo] :
     return actions
 
 
+def plus_action(state: State, player: Player ) -> bool:
+    """test si le joueur n'a plus d'action"""
+    if (legals_dodo(state, player)==[]):
+        return True
+    else: 
+        return False
+
+def final_dodo(state: State) -> bool:
+    """test si l'etat est un etat final"""
+    if plus_action(state, 1) or plus_action(state, 2):
+        return True
+    else: 
+        return False
+
+def score_dodo():
+    """renvoi le score d'une grille finale"""
+    if plus_action(state, 1) and plus_action(state, 2): #je sais pas si c'est possible qu'il y ait égalité
+        return 0
+    if plus_action(state, 1):
+        return 1
+    if plus_action(state, 2):
+        return -1
+    
+
+
 print(legals_dodo(grid_to_state(set_state(state_to_grid(grid_to_state(create_grid(3))))), 1))
 
 
