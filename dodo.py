@@ -110,20 +110,26 @@ def legals_dodo(state: State, player: Player) -> list[ActionDodo] :
     for cell, joueur in state:
         if player==1:
             if player==joueur:
-                if grid[cell[0] + 1][cell[1] - 1] == 0: #mouvement en bas a gauche
-                    actions.append(((cell[0],cell[1]),(cell[0]+1,cell[1]-1)))
-                if grid[cell[0]][cell[1]-1]==0: #mouvement a gauche
-                    actions.append(((cell[0],cell[1]),(cell[0],cell[1]-1)))
-                if grid[cell[0]+1][cell[1]]==0: #mouvement en bas
-                    actions.append(((cell[0],cell[1]),(cell[0]+1,cell[1])))
+                if cell[0] + 1 < len(grid) and cell[1]-1 >= 0:
+                    if grid[cell[0] + 1][cell[1] - 1] == 0: #mouvement en bas a gauche
+                        actions.append(((cell[0],cell[1]),(cell[0]+1,cell[1]-1)))
+                if cell[1]-1 >= 0:
+                    if grid[cell[0]][cell[1]-1]==0: #mouvement a gauche
+                        actions.append(((cell[0],cell[1]),(cell[0],cell[1]-1)))
+                if cell[0] + 1 < len(grid):
+                    if grid[cell[0]+1][cell[1]]==0: #mouvement en bas
+                        actions.append(((cell[0],cell[1]),(cell[0]+1,cell[1])))
         elif player==2:
             if player==joueur:
-                if grid[cell[0]-1][cell[1]+1] == 0: # en haut à droite
-                    actions.append(((cell[0], cell[1]), (cell[0]-1, cell[1]+1)))
-                if grid[cell[0]][cell[1]+1] == 0: # à droite
-                    actions.append(((cell[0], cell[1]), (cell[0], cell[1]+1)))
-                if grid[cell[0]-1][cell[1]] == 0: # en haut
-                    actions.append(((cell[0], cell[1]), (cell[0]-1, cell[1])))
+                if cell[1]+1 < len(grid) and cell[0]-1 >= 0:
+                    if grid[cell[0]-1][cell[1]+1] == 0: # en haut à droite
+                        actions.append(((cell[0], cell[1]), (cell[0]-1, cell[1]+1)))
+                if cell[1]+1 < len(grid):
+                    if grid[cell[0]][cell[1]+1] == 0: # à droite
+                        actions.append(((cell[0], cell[1]), (cell[0], cell[1]+1)))
+                if cell[0]-1 < len(grid):
+                    if grid[cell[0]-1][cell[1]] == 0: # en haut
+                        actions.append(((cell[0], cell[1]), (cell[0]-1, cell[1])))
     # pprint(grid)
     return actions
 
@@ -196,12 +202,12 @@ def dodo(state: State, strategy_1: Strategy, strategy_2: Strategy, debug: bool =
         if result == 0:
             print("Match nul")
         else:
-            print("Le vainqueur est le joueur {result}")
+            print(f"Le vainqueur est le joueur {result}")
         pprint(state_to_grid(state))
         return result
     return result
 
-dodo(grid_to_state(set_state(create_grid(31))), strategy_joueur, strategy_joueur)
+dodo(grid_to_state(set_state(create_grid(3))), strategy_joueur, strategy_joueur)
 
 # print(legals_dodo(grid_to_state(set_state(state_to_grid(grid_to_state(create_grid(3))))), 1))
 
