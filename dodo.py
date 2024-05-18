@@ -23,7 +23,7 @@ Score = int
 Time = int
 Strategy = Callable[[State, Player], Action]
 Grid = list[list[int]]
-state = []
+# state = []
 cells_joueur_2: list[Cell] = []
 # def hex_to_tab(i: int, j: int)->Tuple(int,int):
 
@@ -107,17 +107,18 @@ test_state: State = [
 def create_grid(n: int = 7) -> Grid:
     "fonction qui initialise une grille au format hexagonale"
     grid: list = []
+    distance: int
     for i in range(2 * n - 1):
         line: list[int] = []
         for j in range(2 * n - 1):
             line.append(-1)
         grid.append(line)
-    distance: int = n - 1
+    distance = n - 1
     for i in range(n):
         for j in range(distance, 2 * n - 1):
             grid[i][j] = 0
         distance -= 1
-    distance: int = 2 * n - 1
+    distance = 2 * n - 1
     for i in range(n - 1, distance):
         for j in range(0, distance):
             grid[i][j] = 0
@@ -137,7 +138,7 @@ def size_state(state: State) -> int:
     "détermine la taille d'un objet State pour pouvoir passer d'un State à un Grid"
     l = len(state)
     q = math.sqrt(l)
-    return q // 2 + 1
+    return int(q // 2 + 1)
 
 
 def state_to_grid(state: State) -> Grid:
@@ -168,14 +169,14 @@ def set_state(grid: Grid) -> Grid:
         for j in range(n + i - 1, n * 2 + 1):
             if grid[i][j] != -1:
                 grid[i][j] = 1
-                state.append(((i, j), 1))
+                # state.append(((i, j), 1))
     # print(state)
 
     for i in range(n, len(grid)):
         for j in range(0, i - n + 2):
             if grid[i][j] != -1:
                 grid[i][j] = 2
-                state.append(((i, j), 2))
+                # state.append(((i, j), 2))
     # print(state)
     return grid
 
@@ -183,39 +184,81 @@ def set_state(grid: Grid) -> Grid:
 # print(set_state(state_to_grid(grid_to_state(create_grid()))))
 
 
-def legals_dodo(state: State, player: Player) -> list[ActionDodo]:
+def is_valid_move(grid: Grid, to_cell: Cell) -> bool:
+    "indique si une case peut être atteinte"
+    n: int = len(grid)
+    to_row: int
+    to_col: int
+    to_row, to_col = to_cell
+    if 0 <= to_row < n and 0 <= to_col < n and grid[to_row][to_col] == 0:
+        return True
+    return False
+
+
+def legals_dodo2(state: State, player: Player) -> list[ActionDodo]:
     "donne les coups possibles à partir d'un état de jeu et du joueur désiré"
     actions: list[ActionDodo] = []
-    # print(state)
     grid = state_to_grid(state)
+    directions = {
+        1: [
+            ((1, -1), "mouvement en bas a gauche"),
+            ((0, -1), "mouvement a gauche"),
+            ((1, 0), "mouvement en bas"),
+        ],
+        2: [
+            ((-1, 1), "mouvement en haut à droite"),
+            ((0, 1), "mouvement à droite"),
+            ((-1, 0), "mouvement en haut"),
+        ],
+    }
     for cell, joueur in state:
-        if player == 1 and player == joueur:
-            if cell[0] + 1 < len(grid) and cell[1] - 1 >= 0:
-                if grid[cell[0] + 1][cell[1] - 1] == 0:  # mouvement en bas a gauche
-                    actions.append(((cell[0], cell[1]), (cell[0] + 1, cell[1] - 1)))
-            if cell[1] - 1 >= 0:
-                if grid[cell[0]][cell[1] - 1] == 0:  # mouvement a gauche
-                    actions.append(((cell[0], cell[1]), (cell[0], cell[1] - 1)))
-            if cell[0] + 1 < len(grid):
-                if grid[cell[0] + 1][cell[1]] == 0:  # mouvement en bas
-                    actions.append(((cell[0], cell[1]), (cell[0] + 1, cell[1])))
-        elif player == 2 and player == joueur:
-            if cell[1] + 1 < len(grid) and cell[0] - 1 >= 0:
-                if grid[cell[0] - 1][cell[1] + 1] == 0:  # en haut à droite
-                    actions.append(((cell[0], cell[1]), (cell[0] - 1, cell[1] + 1)))
-            if cell[1] + 1 < len(grid):
-                if grid[cell[0]][cell[1] + 1] == 0:  # à droite
-                    actions.append(((cell[0], cell[1]), (cell[0], cell[1] + 1)))
-            if cell[0] - 1 < len(grid):
-                if grid[cell[0] - 1][cell[1]] == 0:  # en haut
-                    actions.append(((cell[0], cell[1]), (cell[0] - 1, cell[1])))
-    # pprint(grid)
+        if player == joueur:
+            for (d_row, d_col), _ in directions[player]:
+                new_cell = (cell[0] + d_row, cell[1] + d_col)
+                if is_valid_move(grid, new_cell):
+                    actions.append((cell, new_cell))
+
     return actions
+
+
+# pprint(set_state(create_grid(3)))
+
+# print(is_valid_move(set_state(create_grid(3)), (2,1), (0,5)))
+
+
+# def legals_dodo(state: State, player: Player) -> list[ActionDodo]:
+#     "donne les coups possibles à partir d'un état de jeu et du joueur désiré"
+#     actions: list[ActionDodo] = []
+#     # print(state)
+#     grid = state_to_grid(state)
+#     for cell, joueur in state:
+#         if player == 1 and player == joueur:
+#             if cell[0] + 1 < len(grid) and cell[1] - 1 >= 0:
+#                 if grid[cell[0] + 1][cell[1] - 1] == 0:  # mouvement en bas a gauche
+#                     actions.append(((cell[0], cell[1]), (cell[0] + 1, cell[1] - 1)))
+#             if cell[1] - 1 >= 0:
+#                 if grid[cell[0]][cell[1] - 1] == 0:  # mouvement a gauche
+#                     actions.append(((cell[0], cell[1]), (cell[0], cell[1] - 1)))
+#             if cell[0] + 1 < len(grid):
+#                 if grid[cell[0] + 1][cell[1]] == 0:  # mouvement en bas
+#                     actions.append(((cell[0], cell[1]), (cell[0] + 1, cell[1])))
+#         elif player == 2 and player == joueur:
+#             if cell[1] + 1 < len(grid) and cell[0] - 1 >= 0:
+#                 if grid[cell[0] - 1][cell[1] + 1] == 0:  # en haut à droite
+#                     actions.append(((cell[0], cell[1]), (cell[0] - 1, cell[1] + 1)))
+#             if cell[1] + 1 < len(grid):
+#                 if grid[cell[0]][cell[1] + 1] == 0:  # à droite
+#                     actions.append(((cell[0], cell[1]), (cell[0], cell[1] + 1)))
+#             if cell[0] - 1 < len(grid):
+#                 if grid[cell[0] - 1][cell[1]] == 0:  # en haut
+#                     actions.append(((cell[0], cell[1]), (cell[0] - 1, cell[1])))
+#     # pprint(grid)
+#     return actions
 
 
 def plus_action(state: State, player: Player) -> bool:
     """test si le joueur n'a plus d'action"""
-    return not legals_dodo(state, player)
+    return not legals_dodo2(state, player)
     # if legals_dodo(state, player) == []:
     #     return True
     # else:
@@ -266,16 +309,25 @@ def strategy_joueur(state: State, player: Player) -> ActionDodo:
         l2 = int(input())
         print("Colonne :", end="")
         c2 = int(input())
-        if ((l1, c1), (l2, c2)) in legals_dodo(state, player):
+        if ((l1, c1), (l2, c2)) in legals_dodo2(state, player):
             action = ((l1, c1), (l2, c2))
             test = True
-        print("Ce coup n'est pas possible")
+        else:
+            print("Ce coup n'est pas possible")
     return action
+
+
+def strategy_first_legal(state: State, player: Player) -> ActionDodo:
+    "stratégie premier coup possible"
+    coups: list[ActionDodo] = legals_dodo2(state, player)
+    choix: ActionDodo = coups[0]
+    print(f"Choix du joueur {player} : {choix}")
+    return choix
 
 
 def play_dodo(state: State, player: Player, action: ActionDodo) -> State:
     "fonction qui modifie le jeu"
-    grid = state_to_grid(state)
+    grid: Grid = state_to_grid(state)
     grid[action[0][0]][action[0][1]] = 0
     grid[action[1][0]][action[1][1]] = player
     return grid_to_state(grid)
@@ -306,4 +358,4 @@ def dodo(
     return result
 
 
-# dodo(grid_to_state(set_state(create_grid(3))), strategy_joueur, strategy_joueur)
+dodo(grid_to_state(set_state(create_grid(3))), strategy_first_legal, strategy_first_legal)
