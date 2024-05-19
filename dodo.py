@@ -7,7 +7,7 @@ from typing import Callable, Union
 import random
 import ast
 import time
-import math
+from init_obj import create_grid, state_to_grid, grid_to_state
 
 
 # Types de base utilisés par l'arbitre
@@ -31,7 +31,6 @@ cells_joueur_2: list[Cell] = []
 
 # def actions(grid: State) -> Grid:
 
-DEFAULT_RETURN = -255
 test_state: State = [
     ((1, 5), 1),
     ((0, 7), 1),
@@ -103,63 +102,12 @@ test_state: State = [
     ((12, 6), 2),
 ]
 
-
-def create_grid(n: int = 7) -> Grid:
-    "fonction qui initialise une grille au format hexagonale"
-    grid: list = []
-    distance: int
-    for i in range(2 * n - 1):
-        line: list[int] = []
-        for j in range(2 * n - 1):
-            line.append(-1)
-        grid.append(line)
-    distance = n - 1
-    for i in range(n):
-        for j in range(distance, 2 * n - 1):
-            grid[i][j] = 0
-        distance -= 1
-    distance = 2 * n - 1
-    for i in range(n - 1, distance):
-        for j in range(0, distance):
-            grid[i][j] = 0
-        distance -= 1
-    return grid
-
-
 def pprint(grid):
     "affichage d'une grid sous forme d'une matrice"
     for line in grid:
         for ele in line:
             print(f" {ele:2d} ", end="")
         print()
-
-
-def size_state(state: State) -> int:
-    "détermine la taille d'un objet State pour pouvoir passer d'un State à un Grid"
-    l = len(state)
-    q = math.sqrt(l)
-    return int(q // 2 + 1)
-
-
-def state_to_grid(state: State) -> Grid:
-    "permet de passer d'un objet State à un Grid"
-    n: int = int(size_state(state))
-    grid: Grid = create_grid(n)
-    for cell, player in state:
-        # print(cell)
-        # print(player)
-        grid[(cell[0])][(cell[1])] = player
-    return grid
-
-
-def grid_to_state(grid: Grid) -> State:
-    "permet de passer d'un objet Grid à un State"
-    state: State = []
-    for i, row in enumerate(grid):
-        for j, value in enumerate(row):
-            state.append(((i, j), value))
-    return state
-
 
 def set_state(grid: Grid) -> Grid:
     "initialise un grid pour un début de partie"
