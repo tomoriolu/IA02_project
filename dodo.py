@@ -109,7 +109,7 @@ def pprint(grid):
             print(f" {ele:2d} ", end="")
         print()
 
-def set_state(grid: Grid) -> Grid:
+def set_grid(grid: Grid) -> Grid:
     "initialise un grid pour un début de partie"
     # premier joueur
     n: int = len(grid) // 2
@@ -129,7 +129,7 @@ def set_state(grid: Grid) -> Grid:
     return grid
 
 
-# print(set_state(state_to_grid(grid_to_state(create_grid()))))
+# print(set_grid(state_to_grid(grid_to_state(create_grid()))))
 
 
 def is_valid_move(grid: Grid, to_cell: Cell) -> bool:
@@ -169,9 +169,9 @@ def legals_dodo2(state: State, player: Player) -> list[ActionDodo]:
     return actions
 
 
-# pprint(set_state(create_grid(3)))
+# pprint(set_grid(create_grid(3)))
 
-# print(is_valid_move(set_state(create_grid(3)), (2,1), (0,5)))
+# print(is_valid_move(set_grid(create_grid(3)), (2,1), (0,5)))
 
 
 # def legals_dodo(state: State, player: Player) -> list[ActionDodo]:
@@ -306,4 +306,4 @@ def dodo(
     return result
 
 
-dodo(grid_to_state(set_state(create_grid(3))), strategy_first_legal, strategy_first_legal)
+dodo(grid_to_state(set_grid(create_grid(6))), strategy_first_legal, strategy_first_legal)
