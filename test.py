@@ -22,6 +22,40 @@ Grid = list[list[int]]
 cells_joueur_2: list[Cell] = []
 
 
+test_state : State = [
+    ((0,6), 1),
+    ((1,6), 1),
+    ((2,6), 1),
+    ((3,6), 1),
+    ((4,6), 1),
+    ((5,6), 1),
+    ((6,6), 1),
+    ((-6,-6), 2),
+    ((-5,-6), 2),
+    ((-4,-6), 2),
+    ((-3,-6), 2),
+    ((-2,-6), 2),
+    ((-1,-6), 2),
+    ((0,-6), 2),
+]
+
+def pprint(grid):
+    "affichage d'une grid sous forme d'une matrice"
+    i: int = 0
+    for line in grid:
+        for _ in range(0, i):
+            print("  ", end="")
+        for ele in line:
+            print(f" {ele:2d} ", end="")
+        i += 1
+        print()
+
+def coordo(state: State, n: int) -> State:
+    f_state : State = []
+    for cell, player in state:
+        f_state.append(((-cell[1]+n-1, n-1+cell[0]), player))
+    return f_state
+
 
 def create_grid(n: int = 7) -> Grid:
     "fonction qui initialise une grille au format hexagonale"
@@ -43,6 +77,29 @@ def create_grid(n: int = 7) -> Grid:
             grid[i][j] = 0
         distance -= 1
     return grid
+
+def state_to_grid2(state: State, n: int) -> Grid:
+    grid: Grid = create_grid(n)
+    for cell, player in state:
+        # print(cell)
+        # print(player)
+        grid[(cell[0])][(cell[1])] = player
+    return grid
+
+
+# t = coordo(test_state, 7)
+# print(t)
+# pprint(state_to_grid2(t, 7))
+
+def grid_to_state2(grid: Grid) -> State:
+    "permet de passer d'un objet Grid à un State"
+    state: State = []
+    for i, row in enumerate(grid):
+        for j, value in enumerate(row):
+            if value == 1 or value == 2:
+                state.append(((i, j), value))
+    return state
+
 
 
 def size_state(state: State) -> int:
@@ -72,41 +129,3 @@ def grid_to_state(grid: Grid) -> State:
     return state
 
 
-
-def state_to_grid2(state: State, n: int) -> Grid:
-    "permet de passer d'un objet State à un Grid"
-    grid: Grid = create_grid(n)
-    for cell, player in state:
-        grid[-cell[1]+n-1][n-1+cell[0]] = player
-    return grid
-
-
-def grid_to_state2(grid: Grid, n: int) -> State:
-    "permet de passer d'un objet Grid à un State"
-    state: State = []
-    for i, row in enumerate(grid):
-        for j, value in enumerate(row):
-            if value == 1 or value == 2:
-                state.append(((j-n+1, n-1-i), value))
-    return state
-
-
-def symetry_60(state: State) -> State:
-    new_state: State = []
-    for cell, player in state:
-        new_state.append(((cell[1], -cell[0]+cell[1]), player))
-    return new_state
-
-
-def symetry_slash(state: State) -> State:
-    new_state: State = []
-    for cell, player in state:
-        new_state.append(((cell[1], cell[0]), player))
-    return new_state
-
-
-def symetry_backslash(state: State) -> State:
-    new_state: State = []
-    for cell, player in state:
-        new_state.append(((-cell[1], -cell[0]), player))
-    return new_state
