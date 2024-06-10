@@ -265,7 +265,7 @@ def dodo(
         return result
     return result
 
-def evaluation(state: State, player: Player, n: int) -> float:
+def evaluation2(state: State, player: Player, n: int) -> float:
     """Fonction d'évaluation pour estimer la valeur d'un état non terminal."""
     grid: Grid = state_to_grid2(state, n)
     
@@ -291,6 +291,15 @@ def evaluation(state: State, player: Player, n: int) -> float:
                 center_value -= 1
     
     return (player_moves - opponent_moves) + (player_advancement - opponent_advancement) + center_value
+
+
+def evaluation(state: State, player: Player, n: int) -> float:
+    """Fonction d'évaluation pour estimer la valeur d'un état non terminal."""
+    # Exemple simplifié : nombre de pions du joueur moins nombre de pions de l'adversaire
+    grid: Grid = state_to_grid2(state, n)
+    player_count = sum(row.count(player) for row in grid)
+    opponent_count = sum(row.count(3 - player) for row in grid)
+    return opponent_count - player_count
 
 
 def memoize_cache(func):
@@ -320,6 +329,7 @@ def negamax_alpha_beta(state: State, player: Player, depth: int, alpha: float, b
     best_action = None
     
     for action_possible in legals_dodo2(state, player, n):
+        # print(f"action possible : {action_possible}")
         new_state = play_dodo(state, player, action_possible, n)
         score, _ = negamax_alpha_beta(new_state, 3 - player, depth - 1, -beta, -alpha, n)  # 3 - player pour alterner les joueurs
         score = -score  # Négation car c'est le tour de l'adversaire
@@ -333,10 +343,10 @@ def negamax_alpha_beta(state: State, player: Player, depth: int, alpha: float, b
     
     return best_score, best_action
 
-def strategy_negamax_alpha_beta(state: State, player: Player, n: int) -> ActionGopher:
+def strategy_negamax_alpha_beta(state: State, player: Player, n: int) -> ActionDodo:
     alpha=float('-inf')
     beta=float('inf')
-    depth=15
+    depth=5
     _, best_action = negamax_alpha_beta(state, player, depth, alpha, beta, n)  # Choisissez la profondeur de recherche ici
     return best_action
 
@@ -345,15 +355,19 @@ def strategy_negamax_alpha_beta(state: State, player: Player, n: int) -> ActionG
 def main() -> None:
     vic_joueur1 = 0
     start_time = time.time()
-    n = 3
-    for _ in range(10):
+    n = 5
+    for _ in range(20):
         score = dodo(grid_to_state2(set_grid(create_grid(n)), n), strategy_negamax_alpha_beta,strategy_random, n)
         if score == 1:
             vic_joueur1+=1
     print(f"{vic_joueur1}/100")
     end_time = time.time()
     execution_time = end_time - start_time
-    print(f"Temps d'exécution : {execution_time} secondes")   
+    print(f"Temps d'exécution : {execution_time} secondes")  
+
+    # t = grid_to_state2(set_grid(create_grid(n)), n)
+    # pprint(set_grid(create_grid(n)))
+    # print(strategy_negamax_alpha_beta(t, 1, n))
     
     
     

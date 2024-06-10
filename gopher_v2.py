@@ -328,17 +328,24 @@ def strategy_negamax_alpha_beta(state: State, player: Player, n: int) -> ActionG
 
 
 
+n = 7
 c = 0
-start_time = time.time()
-for i in range(1):
-    result = gopher(grid_to_state2(create_grid(6), 6), strategy_negamax_alpha_beta, strategy_random_legal, 6)
-    if result==1:
-        c += 1
+# start_time = time.time()
+# for i in range(10):
+#     result = gopher(grid_to_state2(create_grid(n), n), strategy_negamax_alpha_beta, strategy_random_legal, n)
+#     if result==1:
+#         c += 1
 
-print(f"{c}/100")
-end_time = time.time()
-execution_time = end_time - start_time
-print(f"Temps d'exécution : {execution_time} secondes")
+# print(f"{c}/10")
+# end_time = time.time()
+# execution_time = end_time - start_time
+# print(f"Temps d'exécution : {execution_time} secondes")
+
+
+t = grid_to_state2(create_grid(n), n)
+print(strategy_negamax_alpha_beta(t, 1, n))
+
+
 
 
 # tamer = [((-3,3),1), ((1,3), 2), ((0,-6), 1), ((5,6), 2)]
