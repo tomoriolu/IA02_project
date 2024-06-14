@@ -224,7 +224,7 @@ def strategy_random(state: State, player: Player, n: int) -> ActionDodo:
     "stratégie qui joue un coup random"
     coups: list[ActionDodo] = legals_dodo2(state, player, n)
     choix: ActionDodo = coups[random.randint(0,len(coups)-1)]
-    print(f"Choix du joueur {player} : {choix}")
+    # print(f"Choix du joueur {player} : {choix}")
     return choix
 
 
@@ -252,7 +252,7 @@ def dodo(
             else:
                 state = play_dodo(state, player, strategy_2(state, player, n), n)
             player = 3 - player
-            pprint(state_to_grid2(state, n))
+            # pprint(state_to_grid2(state, n))
             if final_dodo(state, n):
                 fin = True
         result: int = score_dodo(state, n)
@@ -265,32 +265,8 @@ def dodo(
         return result
     return result
 
-def evaluation2(state: State, player: Player, n: int) -> float:
-    """Fonction d'évaluation pour estimer la valeur d'un état non terminal."""
-    grid: Grid = state_to_grid2(state, n)
-    
-    # Compte des pions de chaque joueur
-    player_count = sum(row.count(player) for row in grid)
-    opponent_count = sum(row.count(3 - player) for row in grid)
-    
-    # Mobilité (nombre de coups légaux)
-    player_moves = len(legals_dodo2(state, player, n))
-    opponent_moves = len(legals_dodo2(state, 3 - player, n))
-    
-    # Avancement (position des pions sur la grille)
-    player_advancement = sum(i for i, row in enumerate(grid) for cell in row if cell == player)
-    opponent_advancement = sum(i for i, row in enumerate(grid) for cell in row if cell == 3 - player)
-    
-    # Contrôle du centre
-    center_value = 0
-    for i in range(n - 1, n + 2):
-        for j in range(n - 1, n + 2):
-            if grid[i][j] == player:
-                center_value += 1
-            elif grid[i][j] == 3 - player:
-                center_value -= 1
-    
-    return (player_moves - opponent_moves) + (player_advancement - opponent_advancement) + center_value
+
+
 
 
 def evaluation(state: State, player: Player, n: int) -> float:
@@ -302,19 +278,19 @@ def evaluation(state: State, player: Player, n: int) -> float:
     return opponent_count - player_count
 
 
-def memoize_cache(func):
+def memoize_cache(f):
     cache = {}
 
-    def wrapper(state, player, depth, alpha, beta, n):
+    def g(state, player, depth, alpha, beta, n):
         state_key = tuple(state)
         if (state_key, player, depth) in cache:
             return cache[(state_key, player, depth)]
 
-        result = func(state, player, depth, alpha, beta, n)
+        result = f(state, player, depth, alpha, beta, n)
         cache[(state_key, player, depth)] = result
         return result
 
-    return wrapper
+    return g
 
 @memoize_cache
 def negamax_alpha_beta(state: State, player: Player, depth: int, alpha: float, beta: float, n: int) -> tuple[float, Action]:
@@ -331,8 +307,8 @@ def negamax_alpha_beta(state: State, player: Player, depth: int, alpha: float, b
     for action_possible in legals_dodo2(state, player, n):
         # print(f"action possible : {action_possible}")
         new_state = play_dodo(state, player, action_possible, n)
-        score, _ = negamax_alpha_beta(new_state, 3 - player, depth - 1, -beta, -alpha, n)  # 3 - player pour alterner les joueurs
-        score = -score  # Négation car c'est le tour de l'adversaire
+        score, _ = negamax_alpha_beta(new_state, 3 - player, depth - 1, -beta, -alpha, n)
+        score = -score 
         if score > best_score:
             best_score = score
             best_action = action_possible
@@ -346,8 +322,8 @@ def negamax_alpha_beta(state: State, player: Player, depth: int, alpha: float, b
 def strategy_negamax_alpha_beta(state: State, player: Player, n: int) -> ActionDodo:
     alpha=float('-inf')
     beta=float('inf')
-    depth=5
-    _, best_action = negamax_alpha_beta(state, player, depth, alpha, beta, n)  # Choisissez la profondeur de recherche ici
+    depth=7
+    _, best_action = negamax_alpha_beta(state, player, depth, alpha, beta, n) 
     return best_action
 
 
@@ -355,12 +331,12 @@ def strategy_negamax_alpha_beta(state: State, player: Player, n: int) -> ActionD
 def main() -> None:
     vic_joueur1 = 0
     start_time = time.time()
-    n = 5
-    for _ in range(20):
+    n = 4
+    for _ in range(30):
         score = dodo(grid_to_state2(set_grid(create_grid(n)), n), strategy_negamax_alpha_beta,strategy_random, n)
         if score == 1:
             vic_joueur1+=1
-    print(f"{vic_joueur1}/100")
+    print(f"{vic_joueur1}/10")
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Temps d'exécution : {execution_time} secondes")  

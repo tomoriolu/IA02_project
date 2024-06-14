@@ -3,32 +3,18 @@
 """
 
 # import collections
-from typing import Callable, Union
 import random
-import ast
+# import ast
 import time
-from init_obj import create_grid, state_to_grid, grid_to_state, state_to_grid2, grid_to_state2, symetry_60, symetry_slash, symetry_backslash
-from collections import defaultdict
-import numpy as np
-import math
+from init_obj import create_grid, state_to_grid2, grid_to_state2, symetry_60, \
+    symetry_slash, symetry_backslash
+from def_types import Cell, Action, ActionGopher, Player, State, Strategy, Score, Time, Grid
 
-# Types de base utilisés par l'arbitre
-Environment = ...  # Ensemble des données utiles (cache, état de jeu...) pour
-# que votre IA puisse jouer (objet, dictionnaire, autre...)
-Cell = tuple[int, int]
-ActionGopher = Cell
-ActionDodo = tuple[Cell, Cell]  # case de départ -> case d'arrivée
-Action = Union[ActionGopher, ActionDodo]
-Player = int  # 1 ou 2
-State = list[tuple[Cell, Player]]  # État du jeu pour la boucle de jeu
-Score = int
-Time = int
-Strategy = Callable[[State, Player], Action]
-Grid = list[list[int]]
-cells_joueur_2: list[Cell] = []
+# from collections import defaultdict
+# import numpy as np
 
 
-def pprint(grid):
+def pprint(grid: Grid):
     "affichage d'une grid sous forme d'une matrice"
     i: int = 0
     for line in grid:
@@ -59,7 +45,7 @@ def adj_box(grid: Grid, ennemy_cell: list[Cell], limited: bool) -> list[Cell]:
             (from_row + 1, from_col - 1),
             (from_row + 1, from_col),
         ]
-        if limited == True:
+        if limited:
             for row, col in list_cell_tmp:
                 if (
                     0 <= row < n
@@ -78,6 +64,7 @@ def adj_box(grid: Grid, ennemy_cell: list[Cell], limited: bool) -> list[Cell]:
 def adj_box_player(grid: Grid, list_cell: list[Cell], player: Player) -> list[ActionGopher]:
     "retourne les cases jouables par le joueur parmi la liste de cases"
     test: bool = True
+    cpt: int = 0
     list_final: list[Cell] = []
     for ele in list_cell:
         play_box: list[Cell] = adj_box(grid, [ele], False)
@@ -85,13 +72,17 @@ def adj_box_player(grid: Grid, list_cell: list[Cell], player: Player) -> list[Ac
             if grid[row][col] == player and test:
                 # list_cell.remove(ele)
                 test = False
-        if test:
+            if grid[row][col] == 3-player:
+                cpt+=1
+        if test and cpt==1:
             list_final.append(ele)
         test = True
+        cpt = 0
     return list_final
 
 
 def player_box(grid: Grid, player: Player) -> list[Cell]:
+    "retourne la liste des cases possées par le joueur"
     liste: list[Cell] = []
     n = len(grid)
     for i in range(n):
@@ -102,6 +93,7 @@ def player_box(grid: Grid, player: Player) -> list[Cell]:
 
 
 def legals_gopher(state: State, player: Player, n: int) -> list[ActionGopher]:
+    "retourne la liste de coups possibles pour le joueur"
     grid: Grid = state_to_grid2(state, n)
     if player == 1:
         cell_player: list[Cell] = player_box(grid, 2)
@@ -109,21 +101,13 @@ def legals_gopher(state: State, player: Player, n: int) -> list[ActionGopher]:
         cell_player: list[Cell] = player_box(grid, 1)
     if cell_player:
         list_adj = adj_box(grid, cell_player, True)
-        # print(f"legals_gopher : joueur {player} {list_adj}")
         return adj_box_player(grid, list_adj, player)
-    else:
-        liste :list[ActionGopher] = []
-        for i, row in enumerate(grid):
-            for j, val in enumerate(row):
-                if val == 0:
-                    liste.append((i,j))
-        return liste
-
-
-# t = create_grid(2)
-# t[0][2] = 2
-# pprint(t)
-# print(legals_gopher(grid_to_state(t), 1))
+    liste :list[ActionGopher] = []
+    for i, row in enumerate(grid):
+        for j, val in enumerate(row):
+            if val == 0:
+                liste.append((i,j))
+    return liste
 
 
 def plus_action(state: State, player: Player, n: int) -> bool:
@@ -177,30 +161,8 @@ def strategy_first_legal(state: State, player: Player, n) -> ActionGopher:
 def strategy_random_legal(state: State, player: Player, n) -> ActionGopher:
     "strategy random legal"
     coups : list[ActionGopher] = legals_gopher(state, player, n)
-    # print(f"Voici les coups jouables : {coups}")
     choix : ActionGopher = random.choice(coups)
-    # print(f"Choix aléatoire du joueur {player} : {choix}")
     return choix
-
-def premier_coup(state: State, n) -> ActionGopher:
-    test: bool = False
-    grid: Grid = state_to_grid2(state, n)
-    action: ActionGopher
-    print(f"À vous de jouer, joueur 1")
-    while not test:
-        pprint(grid)
-        print("Choix de la case")
-        print("Ligne : ", end="")
-        l = int(input())
-        print("Colonne :", end="")
-        c = int(input())
-        if l < len(grid) and c < len(grid) and grid[l][c] == 0:
-            action = (l, c)
-            test = True
-        else:
-            print("Ce coup n'est pas possible")
-    return action
-
 
 
 def play_gopher(state: State, player: Player, action: ActionGopher, n: int) -> State:
@@ -215,141 +177,129 @@ def gopher(
 ) -> Score:
     "boucle de jeu"
     if not debug:
-        # state = play_gopher(state, 1, premier_coup(state))
         state = play_gopher(state, 1, strategy_1(state, 1, n), n)
-        # pprint(state_to_grid(state))
         player: int = 2
         fin: bool = False
         while not fin:
             # print("---------------------------")
             if player == 1:
                 state = play_gopher(state, player, strategy_1(state, player, n), n)
-                # pprint(state_to_grid(state))
+                # pprint(state_to_grid2(state, n))
             if player == 2:
                 state = play_gopher(state, player, strategy_2(state, player, n), n)
-                # pprint(state_to_grid(state))
+                # pprint(state_to_grid2(state, n))
             if player == 1:
                 player = 2
             else :
                 player = 1
             if plus_action(state, player, n):
                 fin = True
-            
         result: int = score_gopher(state, n)
         # print("---------------------------")
-        # if result == 0:
-        #     print("Match nul")
-        # else:
-        #     print(f"Le vainqueur est le joueur {result}")
-        # pprint(state_to_grid(state))
+        if result == 0:
+            print("Match nul")
+        else:
+            print(f"Le vainqueur est le joueur {result}")
+        pprint(state_to_grid2(state, n))
         return result
     return result
 
+
+
 def evaluation(state: State, player: Player, n: int) -> float:
-    """Fonction d'évaluation pour estimer la valeur d'un état non terminal."""
-    # Exemple simplifié : nombre de pions du joueur moins nombre de pions de l'adversaire
-    grid: Grid = state_to_grid2(state, n)
-    player_count = sum(row.count(player) for row in grid)
-    opponent_count = sum(row.count(3 - player) for row in grid)
-    return player_count - opponent_count
+    "fonction d'évaluation pour l'algorithme negamax"
+    return (len(legals_gopher(state, player, n)) - len(legals_gopher(state, 3-player, n))) / n*n
+    # division par n*n pour normaliser le résultat afin qu'il soit compris entre -1 et 1 
 
-def memoize_cache(func):
+
+def memoize_cache(f):
+    "fonction de cache"
     cache = {}
-
-    def wrapper(state, player, depth, alpha, beta, n):
-        state_key = tuple(state)
-        if (state_key, player, depth) in cache:
-            return cache[(state_key, player, depth)]
-
-        result = func(state, player, depth, alpha, beta, n)
-        cache[(state_key, player, depth)] = result
+    def g(state, player, depth, alpha, beta, n):
+        state2 = tuple(state) # permet de rendre le state immutable
+        if (state2, player) in cache:
+            return cache[(state2, player)]
+        result = f(state, player, depth, alpha, beta, n)
+        # if result == 0 or result == 1:
+        cache[(state2, player)] = result
         return result
+    return g
 
-    return wrapper
 
-
-def memoize_cache2(func):
+def memoize_cache2(f):
+    "fonction de cache avec traitement des symétries"
     cache = {}
-
-    def wrapper(state, player, depth, alpha, beta, n):
-        state_key = tuple(state)
+    def g(state, player, depth, alpha, beta, n):
+        state2 = tuple(state)
         symmetries = [
-            state_key,
+            state2,
             tuple(symetry_60(state)),
             tuple(symetry_slash(state)),
             tuple(symetry_backslash(state))
         ]
-
         for sym_state in symmetries:
             if (sym_state, player, depth) in cache:
                 return cache[(sym_state, player, depth)]
-
-        result = func(state, player, depth, alpha, beta, n)
+        result = f(state, player, depth, alpha, beta, n)
         for sym_state in symmetries:
             cache[(sym_state, player, depth)] = result
-
         return result
+    return g
 
-    return wrapper
 
-
-@memoize_cache
-def negamax_alpha_beta(state: State, player: Player, depth: int, alpha: float, beta: float, n: int) -> tuple[float, Action]:
+@memoize_cache2
+def negamax_alpha_beta(state: State, player: Player, depth: int,
+    alpha: float, beta: float, n: int) -> tuple[float, Action]:
+    "algorithme negamax"
     if depth == 0 or final_gopher(state, player, n):
         if final_gopher(state, player, n):
-            score = score_gopher(state, n)
+            if player == 1:
+                score = 1
+            else:
+                score = -1
         else:
             score = evaluation(state, player, n)
         return score, None
-    
     best_score = float('-inf')
     best_action = None
-    
     for action_possible in legals_gopher(state, player, n):
         new_state = play_gopher(state, player, action_possible, n)
-        score, _ = negamax_alpha_beta(new_state, 3 - player, depth - 1, -beta, -alpha, n)  # 3 - player pour alterner les joueurs
-        score = -score  # Négation car c'est le tour de l'adversaire
+        score = - negamax_alpha_beta(new_state, 3 - player, depth - 1, -beta, -alpha, n)[0]
         if score > best_score:
             best_score = score
             best_action = action_possible
-        
         alpha = max(alpha, score)
         if alpha >= beta:
             break
-    
     return best_score, best_action
 
 def strategy_negamax_alpha_beta(state: State, player: Player, n: int) -> ActionGopher:
-    alpha=float('-inf')
-    beta=float('inf')
-    depth=5
-    _, best_action = negamax_alpha_beta(state, player, depth, alpha, beta, n)  # Choisissez la profondeur de recherche ici
+    "stratégie appelant l'algorithme negamax"
+    alpha = float('-inf')
+    beta = float('inf')
+    depth = 11
+    _, best_action = negamax_alpha_beta(state, player, depth, alpha, beta, n)
     return best_action
 
 
 
-n = 7
-c = 0
+
+# n = 5
+# c = 0
 # start_time = time.time()
-# for i in range(10):
-#     result = gopher(grid_to_state2(create_grid(n), n), strategy_negamax_alpha_beta, strategy_random_legal, n)
+# for i in range(100):
+#     result = gopher(grid_to_state2(create_grid(n), n),
+#         strategy_negamax_alpha_beta, strategy_random_legal, n)
 #     if result==1:
 #         c += 1
 
-# print(f"{c}/10")
+# print(f"{c}/100")
 # end_time = time.time()
 # execution_time = end_time - start_time
 # print(f"Temps d'exécution : {execution_time} secondes")
 
 
-t = grid_to_state2(create_grid(n), n)
-print(strategy_negamax_alpha_beta(t, 1, n))
-
-
-
-
-# tamer = [((-3,3),1), ((1,3), 2), ((0,-6), 1), ((5,6), 2)]
-
-# pprint(state_to_grid2(tamer, 7))
-# pprint(state_to_grid2(symetry_60(tamer), 7))
-# print(symetry_slash(tamer))
+# t = create_grid(n)
+# p = play_gopher(grid_to_state2(t, n), 1, strategy_negamax_alpha_beta(grid_to_state2(t, n), 1, n), n)
+# pprint(state_to_grid2(p, n))
+# p = play_gopher(p, 2, strategy_first_legal())

@@ -21,6 +21,10 @@ Grid = list[list[int]]
 # state = []
 cells_joueur_2: list[Cell] = []
 
+def coordo(action: ActionGopher, n: int) -> State:
+    action2 : ActionGopher = (action[1]-n+1, n-1-action[0])
+    return action2
+
 
 
 def create_grid(n: int = 7) -> Grid:
@@ -86,7 +90,7 @@ def grid_to_state2(grid: Grid, n: int) -> State:
     state: State = []
     for i, row in enumerate(grid):
         for j, value in enumerate(row):
-            if value == 1 or value == 2:
+            if value != -1:
                 state.append(((j-n+1, n-1-i), value))
     return state
 
