@@ -276,7 +276,6 @@ def strategy_random(state: State, player: Player) -> ActionDodo:
     "stratégie qui joue un coup random"
     coups: list[ActionDodo] = legals_dodo2(state, player)
     choix: ActionDodo = coups[random.randint(0,len(coups)-1)]
-    print(f"Choix du joueur {player} : {choix}")
     return choix
 
 def memoize2(f: Callable[[State, Player], tuple[Score, Action]]) -> Callable[[State, Player], tuple[Score, list[Action]]]:
@@ -322,16 +321,19 @@ def strategy_minmax(grid: State, player: Player) -> Action:
     strategy = minmax_action(grid, player)
     return strategy[1]
 
-def eval_coups(state: State, player: Player ) -> int:
-    if player == 1 :    
-        eval : int = len(legals_dodo2(state, 2))
-    else :
-         eval : int = len(legals_dodo2(state, 1))
+def eval_coups(state: State) -> int: 
+    evalJoueur1 : int = len(legals_dodo2(state, 1))
+    evalJoueur2 : int = len(legals_dodo2(state, 2))
+    eval = evalJoueur2 - evalJoueur1
     return eval
 
 def alphabeta(grid: State, player: Player, alpha: float = float('-inf'), beta: float =float('inf'), depth: int = 4) -> tuple[Score, Action]:
     if final_dodo(grid) or depth == 0:
-       return (eval_coups(grid, player), [(-1,-1)])
+        if final_dodo(grid):
+            score = score_dodo(grid)
+        else:
+            score = eval_coups(grid)
+        return (score, None)
     if player==1: # maximizing player
         bestValue = float('-inf')
         for child in legals_dodo2(grid, 1):
@@ -372,7 +374,7 @@ def dodo(
     if not debug:
         player: int = 1
         while not final_dodo(state):
-            print("---------------------------")
+            #print("---------------------------")
             #pprint(state_to_grid(state))
             #time.sleep(1)
             if player == 1:
@@ -382,12 +384,12 @@ def dodo(
                 state = play_dodo(state, player, strategy_2(state, player))
                 player = 1
         result: int = score_dodo(state)
-        print("---------------------------")
-        if result == 0:
-            print("Match nul")
-        else:
-            print(f"Le vainqueur est le joueur {result}")
-        pprint(state_to_grid(state))
+        # print("---------------------------")
+        # if result == 0:
+        #     print("Match nul")
+        # else:
+        #     print(f"Le vainqueur est le joueur {result}")
+        # pprint(state_to_grid(state))
         return result
     return result
 

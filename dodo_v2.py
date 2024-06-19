@@ -235,6 +235,40 @@ def play_dodo(state: State, player: Player, action: ActionDodo, n: int) -> State
     grid[action[1][0]][action[1][1]] = player
     return grid_to_state2(grid, n)
 
+def eval_coups(state: State, n: int) -> int: 
+    evalJoueur1 : int = len(legals_dodo2(state, 1, n))
+    evalJoueur2 : int = len(legals_dodo2(state, 2, n))
+    eval = - (evalJoueur1 - evalJoueur2) 
+    return eval/n**2 
+
+def eval_coups2(state: State, n: int) -> int: 
+    directions = {
+        1: [
+            ((1, -1), "mouvement en bas a gauche"),
+            ((0, -1), "mouvement a gauche"),
+            ((1, 0), "mouvement en bas"),
+        ],
+        2: [
+            ((-1, 1), "mouvement en haut à droite"),
+            ((0, 1), "mouvement à droite"),
+            ((-1, 0), "mouvement en haut"),
+        ],
+    }
+    grid = state_to_grid2(state, n)
+    coupsJoueur1 = legals_dodo2(state, 1, n)
+    coupsJoueur2 = legals_dodo2(state, 2, n)
+    evalJoueur1 : int = len(coupsJoueur1)
+    evalJoueur2 : int = len(coupsJoueur2)
+    for cell, _ in coupsJoueur1:
+        for (d_row, d_col), _ in directions[1]:
+            if not is_valid_move(grid, (cell[0] + d_row, cell[1] + d_col) ):
+                evalJoueur1+=2
+    for cell, _ in coupsJoueur2:
+        for (d_row, d_col), _ in directions[2]:
+            if not is_valid_move(grid, (cell[0] + d_row, cell[1] + d_col) ):
+                evalJoueur2+=2    
+    eval = - (evalJoueur1 - evalJoueur2) 
+    return eval/n**2 
 
 def dodo(
     state: State, strategy_1: Strategy, strategy_2: Strategy, n: int, debug: bool = False
@@ -244,7 +278,7 @@ def dodo(
         player: int = 1
         fin: bool = False
         while not fin:
-            print("---------------------------")
+            #print("---------------------------")
             #pprint(state_to_grid(state))
             #time.sleep(1)
             if player == 1:
@@ -256,7 +290,7 @@ def dodo(
             if final_dodo(state, n):
                 fin = True
         result: int = score_dodo(state, n)
-        print("---------------------------")
+        #print("---------------------------")
         if result == 0:
             print("Match nul")
         else:
@@ -265,20 +299,83 @@ def dodo(
         return result
     return result
 
+def alphabeta_classique(grid: State, player: Player, n: int, alpha: float = float('-inf'), beta: float =float('inf'), depth: int = 4) -> tuple[Score, Action]:
+    if depth == 0 or plus_action(grid, player, n):
+        if plus_action(grid, player, n):
+            score = 1 if player == 1 else -1
+        else:
+            score = eval_coups(grid, n)
+        
+        return score, 1
+    if player==1: # maximizing player
+        bestValue = float('-inf')
+        for child in legals_dodo2(grid, 1, n):
+            v , _ = alphabeta_classique(play_dodo(grid, 1, child, n), 2, n, alpha, beta, depth - 1)
+            bestValue = max(bestValue, -v)
+            alpha = max(alpha, bestValue)
+            if alpha >= beta:
+                #print("coupure alpha")
+                break
+        return bestValue, child
+    else: # minimizing player
+        bestValue = float('inf')
+        for child in legals_dodo2(grid,2, n):
+            v, _ = alphabeta_classique(play_dodo(grid, 2, child, n), 1, n, alpha, beta, depth - 1)
+            bestValue = min(bestValue, v)
+            beta = min(beta, bestValue)
+            if alpha >= beta:
+                #print("coupure beta")
+                break
+        return bestValue, child
+
+def strategy_alphabeta_classique(grid: State, player: Player, n: int) -> Action:
+    depth: int = 1
+    alpha: float = float('-inf')
+    beta: float =float('inf')
+    strategy = alphabeta_classique(grid, player, n, alpha, beta, depth)
+    return strategy[1]
 
 
 
 
-def evaluation(state: State, player: Player, n: int) -> float:
-    """Fonction d'évaluation pour estimer la valeur d'un état non terminal."""
-    # Exemple simplifié : nombre de pions du joueur moins nombre de pions de l'adversaire
-    grid: Grid = state_to_grid2(state, n)
-    player_count = sum(row.count(player) for row in grid)
-    opponent_count = sum(row.count(3 - player) for row in grid)
-    return opponent_count - player_count
+def alphabeta_cache(grid: State, player: Player, n: int, alpha: float = float('-inf'), beta: float =float('inf'), depth: int = 4) -> tuple[Score, Action]:
+    if depth == 0 or plus_action(grid, player, n):
+        if plus_action(grid, player, n):
+            score = 1 if player == 1 else -1
+        else:
+            score = eval_coups(grid, n)
+        
+        return score, (1,1)
+    if player==1: # maximizing player
+        bestValue = float('-inf')
+        for child in legals_dodo2(grid, 1, n):
+            v , _ = alphabeta_cache(play_dodo(grid, 1, child, n), 2, n, alpha, beta, depth - 1)
+            bestValue = max(bestValue, -v)
+            alpha = max(alpha, bestValue)
+            if alpha >= beta:
+                #print("coupure alpha")
+                break
+        return bestValue, child
+    else: # minimizing player
+        bestValue = float('inf')
+        for child in legals_dodo2(grid,2, n):
+            v, _ = alphabeta_cache(play_dodo(grid, 2, child, n), 1, n, alpha, beta, depth - 1)
+            bestValue = min(bestValue, v)
+            beta = min(beta, bestValue)
+            if alpha >= beta:
+                #print("coupure beta")
+                break
+        return bestValue, child
+
+def strategy_alphabeta_cache(grid: State, player: Player, n: int) -> Action:
+    depth: int = 3
+    alpha: float = float('-inf')
+    beta: float =float('inf')
+    strategy = alphabeta_cache(grid, player, n, alpha, beta, depth)
+    return strategy[1]
 
 
-def memoize_cache(f):
+def memoize_cachealphabeta(f):
     cache = {}
 
     def g(state, player, depth, alpha, beta, n):
@@ -292,38 +389,100 @@ def memoize_cache(f):
 
     return g
 
+@memoize_cachealphabeta
+def alphabeta_indeterministe(grid: State, player: Player, n: int, alpha: float = float('-inf'), beta: float =float('inf'), depth: int = 4) -> tuple[Score, Action]:
+    if depth == 0 or plus_action(grid, player, n):
+        if plus_action(grid, player, n):
+            score = 1 if player == 1 else -1
+        else:
+            score = eval_coups2(grid, n)
+        return score, (1,1)
+
+    best_actions = []
+    
+    if player == 1:  # maximizing player
+        bestValue = float('-inf')
+        for child in legals_dodo2(grid, 1, n):
+            v, _ = alphabeta_indeterministe(play_dodo(grid, 1, child, n), 2, n, alpha, beta, depth - 1)
+            if v > bestValue:
+                bestValue = v
+                best_actions = [child]
+            elif v == bestValue:
+                best_actions.append(child)
+            alpha = max(alpha, bestValue)
+            if alpha >= beta:
+                break
+        return bestValue, random.choice(best_actions)
+
+    else:  # minimizing player
+        bestValue = float('inf')
+        for child in legals_dodo2(grid, 2, n):
+            v, _ = alphabeta_indeterministe(play_dodo(grid, 2, child, n), 1, n, alpha, beta, depth - 1)
+            if v < bestValue:
+                bestValue = v
+                best_actions = [child]
+            elif v == bestValue:
+                best_actions.append(child)
+            beta = min(beta, bestValue)
+            if alpha >= beta:
+                break
+        return bestValue, random.choice(best_actions)
+
+def strategy_alphabeta_indeterministe(grid: State, player: Player, n: int) -> Action:
+    depth: int = 4
+    alpha: float = float('-inf')
+    beta: float = float('inf')
+    strategy = alphabeta_indeterministe(grid, player, n, alpha, beta, depth)
+    return strategy[1]
+
+def memoize_cache(f):
+    cache = {}
+
+    def g(state, player, depth, alpha, beta, n, nbis):
+        state_key = tuple(state)
+        if (state_key, player, depth) in cache:
+            return cache[(state_key, player, depth)]
+
+        result = f(state, player, depth, alpha, beta, n, nbis)
+        cache[(state_key, player, depth)] = result
+        return result
+
+    return g
+
 @memoize_cache
-def negamax_alpha_beta(state: State, player: Player, depth: int, alpha: float, beta: float, n: int) -> tuple[float, Action]:
+def negamax_alpha_beta(state: State, player: Player, depth: int, alpha: float, beta: float, n: int, initial_depth: int) -> tuple[float, Action]:
     if depth == 0 or plus_action(state, player, n):
         if plus_action(state, player, n):
-            score = score_dodo(state, n)
+            score = 1 if player == 1 else -1
         else:
-            score = evaluation(state, player, n)
+            score = eval_coups2(state, n)
+        if initial_depth % 2 != 0:
+             score = -score
         return score, None
-    
+
     best_score = float('-inf')
     best_action = None
-    
+
     for action_possible in legals_dodo2(state, player, n):
-        # print(f"action possible : {action_possible}")
         new_state = play_dodo(state, player, action_possible, n)
-        score, _ = negamax_alpha_beta(new_state, 3 - player, depth - 1, -beta, -alpha, n)
-        score = -score 
+        score, _ = negamax_alpha_beta(new_state, 3 - player, depth - 1, -beta, -alpha, n, initial_depth)
+        score = -score
+
         if score > best_score:
             best_score = score
             best_action = action_possible
-        
+
         alpha = max(alpha, score)
         if alpha >= beta:
             break
-    
+
     return best_score, best_action
 
 def strategy_negamax_alpha_beta(state: State, player: Player, n: int) -> ActionDodo:
     alpha=float('-inf')
     beta=float('inf')
-    depth=7
-    _, best_action = negamax_alpha_beta(state, player, depth, alpha, beta, n) 
+    depth=8
+    _, best_action = negamax_alpha_beta(state, player, depth, alpha, beta, n, depth) 
     return best_action
 
 
@@ -332,11 +491,11 @@ def main() -> None:
     vic_joueur1 = 0
     start_time = time.time()
     n = 4
-    for _ in range(30):
-        score = dodo(grid_to_state2(set_grid(create_grid(n)), n), strategy_negamax_alpha_beta,strategy_random, n)
+    for _ in range(100):
+        score = dodo(grid_to_state2(set_grid(create_grid(n)), n),    strategy_alphabeta_classique,strategy_alphabeta_indeterministe,n)
         if score == 1:
             vic_joueur1+=1
-    print(f"{vic_joueur1}/10")
+    print(f"{vic_joueur1}/100")
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Temps d'exécution : {execution_time} secondes")  
@@ -344,6 +503,8 @@ def main() -> None:
     # t = grid_to_state2(set_grid(create_grid(n)), n)
     # pprint(set_grid(create_grid(n)))
     # print(strategy_negamax_alpha_beta(t, 1, n))
+    
+    
     
     
     
