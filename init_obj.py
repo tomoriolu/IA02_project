@@ -21,8 +21,11 @@ Grid = list[list[int]]
 # state = []
 cells_joueur_2: list[Cell] = []
 
-def coordo(action: ActionGopher, n: int) -> State:
-    action2 : ActionGopher = (action[1]-n+1, n-1-action[0])
+def coordo(action: Action, n: int, game: str) -> State:
+    if game == 'gopher':
+        action2 : Action = (action[1]-n+1, n-1-action[0])
+    elif game == 'dodo':
+        action2: Action = ((action[0][1]-n+1, n-1-action[0][0]), (action[1][1]-n+1, n-1-action[1][0]))
     return action2
 
 

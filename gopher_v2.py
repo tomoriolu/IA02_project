@@ -247,16 +247,16 @@ def memoize_cache2(f):
     return g
 
 
-@memoize_cache2
+@memoize_cache
 def negamax_alpha_beta(state: State, player: Player, depth: int,
     alpha: float, beta: float, n: int) -> tuple[float, Action]:
     "algorithme negamax"
     if depth == 0 or final_gopher(state, player, n):
         if final_gopher(state, player, n):
             if player == 1:
-                score = 1
-            else:
                 score = -1
+            else:
+                score = 1
         else:
             score = evaluation(state, player, n)
         return score, None
@@ -277,7 +277,7 @@ def strategy_negamax_alpha_beta(state: State, player: Player, n: int) -> ActionG
     "stratégie appelant l'algorithme negamax"
     alpha = float('-inf')
     beta = float('inf')
-    depth = 11
+    depth = 7
     _, best_action = negamax_alpha_beta(state, player, depth, alpha, beta, n)
     return best_action
 
@@ -287,9 +287,9 @@ def strategy_negamax_alpha_beta(state: State, player: Player, n: int) -> ActionG
 # n = 5
 # c = 0
 # start_time = time.time()
-# for i in range(100):
+# for i in range(10):
 #     result = gopher(grid_to_state2(create_grid(n), n),
-#         strategy_negamax_alpha_beta, strategy_random_legal, n)
+#         strategy_negamax_alpha_beta, strategy_negamax_alpha_beta, n)
 #     if result==1:
 #         c += 1
 
