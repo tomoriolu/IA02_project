@@ -8,6 +8,7 @@ from def_types import Cell, Action, ActionDodo, ActionGopher, Player, State, Str
 from gopher_v2 import strategy_negamax_alpha_beta, strategy_negamax_indeterministe
 from dodo_v2 import strategy_alphabeta_indeterministe_dodo, strategy_negamax_alpha_beta_dodo
 from gopher_test import strategy_mcts
+from dodo_mc import strategy_monte_carlo
 from init_obj import coordo
 from time import sleep
 
@@ -17,14 +18,13 @@ Environment = Dict[str, Any]
 def initialize(
     game: str, state: State, player: Player, hex_size: int, total_time: Time
 ) -> Environment:
-    "Initialize the game env"
     dico : Dict = {}
     dico["size"] = hex_size
     dico["game"] = game
     if game == GOPHER_STR :
         dico["strat"] = strategy_negamax_alpha_beta
     elif game == DODO_STR:
-        dico["strat"] = strategy_negamax_alpha_beta_dodo
+        dico["strat"] = strategy_monte_carlo
     print(f"Vous êtes le joueur {player}")
     print(f"Temps total : {total_time}")
     return dico
@@ -38,16 +38,13 @@ def strategy_brain(
     strat = env["strat"]
     game = env["game"]
     action = strat(state, player, n)
-    print(f"Coup choisi : {action}")
     action = coordo(action, n, game)
-
+    print(f"Coup choisi : {action}")
     return (env, action)
 
 
 def final_result(state: State, score: Score, player: Player):
     print(f"Le joueur {player} a gagné.")
-
-    # print(f"Ending: {player} wins with a score of {score}")
 
 
 if __name__ == "__main__":
@@ -58,7 +55,7 @@ if __name__ == "__main__":
     parser.add_argument("group_id")
     parser.add_argument("members")
     parser.add_argument("password")
-    parser.add_argument("-s", "--server-url", default="http://localhost:8080")
+    parser.add_argument("-s", "--server-url", default="http://localhost:8080/")
     parser.add_argument("-d", "--disable-dodo", action="store_true")
     parser.add_argument("-g", "--disable-gopher", action="store_true")
     args = parser.parse_args()

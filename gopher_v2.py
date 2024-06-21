@@ -7,7 +7,7 @@ import random
 # import ast
 import time
 from init_obj import create_grid, state_to_grid2, grid_to_state2, symetry_60, \
-    symetry_slash, symetry_backslash, state_to_tuple
+    symetry_slash, symetry_backslash, state_to_tuple_alpha_beta
 from def_types import Cell, Action, ActionGopher, Player, State, Strategy, Score, Time, Grid
 
 # from collections import defaultdict
@@ -204,10 +204,9 @@ def gopher(
 
 
 
-def evaluation(state: State, n: int) -> float:
+def evaluation(state: State, player, n: int) -> float:
     "fonction d'évaluation pour l'algorithme negamax"
-    return (len(legals_gopher(state, 1, n)) - len(legals_gopher(state, 2, n))) / n**2
-    # division par n*n pour normaliser le résultat afin qu'il soit compris entre -1 et 1 
+    return len(legals_gopher(state, player, n)) - len(legals_gopher(state, 3 - player, n)) + score_gopher(state, player, n)*10000
 
 
 def evaluation2(state: State, n: int) -> float:
@@ -398,12 +397,12 @@ def strategy_alphabeta_classique(grid: State, player: Player, n: int) -> Action:
 def cache_negamax_alpha_beta(f):
     cache = {}
     def g(state, player, depth, alpha, beta, n):
-        state2 = state_to_tuple(state)
-        if state2 in cache:
-            return cache[state2]
+        state_key = state_to_tuple_alpha_beta(state, alpha, beta)
+        if state_key in cache:
+            return cache[state_key]
         result = f(state, player, depth, alpha, beta, n)
-        if result[1] != None :
-            cache[state2] = result
+        if result[1] is not None:
+            cache[state_key] = result
         return result
     return g
 
@@ -414,7 +413,7 @@ def negamax_alpha_beta(state: State, player: Player, depth: int,
     alpha: float, beta: float, n: int) -> tuple[float, Action]:
     "algorithme negamax"
     if depth == 0 or final_gopher(state, player, n):
-        score = evaluation3(state, player, n)
+        score = evaluation(state, player, n)
         return score, None
     best_score = float('-inf')
     best_action = None
@@ -433,7 +432,7 @@ def strategy_negamax_alpha_beta(state: State, player: Player, n: int) -> ActionG
     "stratégie appelant l'algorithme negamax"
     alpha = float('-inf')
     beta = float('inf')
-    depth = 8
+    depth = 9
     _, best_action = negamax_alpha_beta(state, player, depth, alpha, beta, n)
     return best_action
 
@@ -490,7 +489,7 @@ def main() -> None:
     start_time = time.time()
     for i in range(100):
         # result = gopher(grid_to_state2(create_grid(n), n),
-            # strategy_negamax_alpha_beta, strategy_random_legal, n)
+        #     strategy_negamax_alpha_beta, strategy_random_legal, n)
         result = gopher(grid_to_state2(create_grid(n), n),
             strategy_random_legal, strategy_negamax_alpha_beta, n)
         if result==1:

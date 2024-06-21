@@ -119,6 +119,10 @@ def symetry_backslash(state: State) -> State:
     return new_state
 
 
+def state_to_tuple_alpha_beta(state: State, alpha: int, beta: int) -> tuple:
+    state_tuple = tuple(sorted((tuple(cell), player) for cell, player in state))
+    return (state_tuple, alpha, beta)
+
+
 def state_to_tuple(state: State) -> tuple:
-    """Convert state to tuple."""
     return tuple(sorted((tuple(cell), player) for cell, player in state))
