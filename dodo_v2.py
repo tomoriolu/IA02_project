@@ -329,7 +329,7 @@ def alphabeta_classique(grid: State, player: Player, n: int, alpha: float = floa
         return bestValue, child
 
 def strategy_alphabeta_classique(grid: State, player: Player, n: int) -> Action:
-    depth: int = 1
+    depth: int = 3
     alpha: float = float('-inf')
     beta: float =float('inf')
     strategy = alphabeta_classique(grid, player, n, alpha, beta, depth)
@@ -429,7 +429,7 @@ def alphabeta_indeterministe(grid: State, player: Player, n: int, alpha: float =
         return bestValue, random.choice(best_actions)
 
 def strategy_alphabeta_indeterministe(grid: State, player: Player, n: int) -> Action:
-    depth: int = 4
+    depth: int = 3
     alpha: float = float('-inf')
     beta: float = float('inf')
     strategy = alphabeta_indeterministe(grid, player, n, alpha, beta, depth)
@@ -492,7 +492,7 @@ def main() -> None:
     start_time = time.time()
     n = 4
     for _ in range(100):
-        score = dodo(grid_to_state2(set_grid(create_grid(n)), n),    strategy_alphabeta_classique,strategy_alphabeta_indeterministe,n)
+        score = dodo(grid_to_state2(set_grid(create_grid(n)), n),    strategy_alphabeta_classique,strategy_random,n)
         if score == 1:
             vic_joueur1+=1
     print(f"{vic_joueur1}/100")
