@@ -7,7 +7,8 @@ from typing import Callable, Union
 import random
 import ast
 import time
-from init_obj import create_grid, state_to_grid, grid_to_state, state_to_grid2, grid_to_state2
+from init_obj import create_grid, state_to_grid, grid_to_state, state_to_grid2, grid_to_state2, \
+    state_to_tuple
 
 
 # Types de base utilisés par l'arbitre
@@ -167,7 +168,7 @@ def play_dodo(state: State, player: Player, action: ActionDodo, n: int) -> State
 def eval_coups(state: State, n: int) -> int: 
     evalJoueur1 : int = len(legals_dodo2(state, 1, n))
     evalJoueur2 : int = len(legals_dodo2(state, 2, n))
-    eval = - (evalJoueur1 - evalJoueur2) 
+    eval = evalJoueur2 - evalJoueur1
     return eval/n**2 
 
 def eval_coups2(state: State, n: int) -> int: 
@@ -191,13 +192,13 @@ def eval_coups2(state: State, n: int) -> int:
     for cell, _ in coupsJoueur1:
         for (d_row, d_col), _ in directions[1]:
             if not is_valid_move(grid, (cell[0] + d_row, cell[1] + d_col) ):
-                evalJoueur1+=2
+                evalJoueur2+=5
     for cell, _ in coupsJoueur2:
         for (d_row, d_col), _ in directions[2]:
             if not is_valid_move(grid, (cell[0] + d_row, cell[1] + d_col) ):
-                evalJoueur2+=2    
-    eval = - (evalJoueur1 - evalJoueur2) 
-    return eval/n**2 
+                evalJoueur1+=5    
+    eval = evalJoueur2 - evalJoueur1
+    return eval
 
 def dodo(
     state: State, strategy_1: Strategy, strategy_2: Strategy, n: int, debug: bool = False
@@ -224,7 +225,7 @@ def dodo(
         # if result == 0:
         #     print("Match nul")
         # else:
-        #     print(f"Le vainqueur est le joueur {result}")
+        print(f"Le vainqueur est le joueur {result}")
         # pprint(state_to_grid2(state, n))
         return result
     return result
@@ -364,40 +365,51 @@ def strategy_alphabeta_indeterministe_dodo(state: State, player: Player, n: int)
     alpha: float = float('-inf')
     beta: float = float('inf')
     strategy = alphabeta_indeterministe(state, player, n, alpha, beta, depth)
-    # print(strategy[1])
     return strategy[1]
 
 def memoize_cache(f):
     cache = {}
 
-    def g(state, player, depth, alpha, beta, n, nbis):
-        state_key = tuple(state)
-        if (state_key, player, depth) in cache:
-            return cache[(state_key, player, depth)]
+    def g(state, player, depth, alpha, beta, n):
+        state_key = state_to_tuple(state)
+        if state_key in cache:
+            return cache[state_key]
 
-        result = f(state, player, depth, alpha, beta, n, nbis)
-        cache[(state_key, player, depth)] = result
+        result = f(state, player, depth, alpha, beta, n)
+        if result[1] != None:
+            cache[state_key] = result
         return result
 
     return g
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @memoize_cache
-def negamax_alpha_beta(state: State, player: Player, depth: int, alpha: float, beta: float, n: int, initial_depth: int) -> tuple[float, Action]:
+def negamax_alpha_beta(state: State, player: Player, depth: int, alpha: float, beta: float, n: int) -> tuple[float, Action]:
     if depth == 0 or plus_action(state, player, n):
-        if plus_action(state, player, n):
-            score = 1 if player == 1 else -1
-        else:
-            score = eval_coups2(state, n)
-        if initial_depth % 2 != 0:
-             score = -score
-        return score, None
+        score = eval_coups2(state, n)
+        return - score, None
 
     best_score = float('-inf')
     best_action = None
 
     for action_possible in legals_dodo2(state, player, n):
         new_state = play_dodo(state, player, action_possible, n)
-        score, _ = negamax_alpha_beta(new_state, 3 - player, depth - 1, -beta, -alpha, n, initial_depth)
+        score = - negamax_alpha_beta(new_state, 3 - player, depth - 1, -beta, -alpha, n)[0]
         score = -score
 
         if score > best_score:
@@ -410,12 +422,17 @@ def negamax_alpha_beta(state: State, player: Player, depth: int, alpha: float, b
 
     return best_score, best_action
 
-def strategy_negamax_alpha_beta(state: State, player: Player, n: int) -> ActionDodo:
+def strategy_negamax_alpha_beta_dodo(state: State, player: Player, n: int) -> ActionDodo:
     alpha=float('-inf')
     beta=float('inf')
-    depth=8
-    _, best_action = negamax_alpha_beta(state, player, depth, alpha, beta, n, depth) 
+    depth=6
+    _, best_action = negamax_alpha_beta(state, player, depth, alpha, beta, n) 
     return best_action
+
+
+
+
+
 
 
 
@@ -424,10 +441,11 @@ def main() -> None:
     start_time = time.time()
     n = 4
     for _ in range(100):
-        score = dodo(grid_to_state2(set_grid(create_grid(n)), n), strategy_alphabeta_classique, strategy_alphabeta_indeterministe_dodo,n)
+        # score = dodo(grid_to_state2(set_grid(create_grid(n)), n), strategy_negamax_alpha_beta_dodo, strategy_random,n)
+        score = dodo(grid_to_state2(set_grid(create_grid(n)), n), strategy_random, strategy_negamax_alpha_beta_dodo,n)
         if score == 1:
             vic_joueur1+=1
-    print(f"{vic_joueur1}/1000")
+    print(f"{vic_joueur1}/100")
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Temps d'exécution : {execution_time} secondes")  
@@ -446,10 +464,6 @@ def main() -> None:
     #     # print(i)
     #     t = play_dodo(t, 2, i, n)
     #     print(t)
-    
-    
-    # t = [((0, 3), 2), ((1, 3), 2), ((2, 3), 2), ((3, 3), 2), ((-1, 2), 0), ((0, 2), 2), ((1, 2), 2), ((2, 2), 2), ((3, 2), 2), ((-2, 1), 0), ((-1, 1), 1), ((0, 1), 2), ((1, 1), 2), ((2, 1), 2), ((3, 1), 2), ((-3, 0), 0), ((-2, 0), 0), ((-1, 0), 1), ((0, 0), 0), ((1, 0), 0), ((2, 0), 2), ((3, 0), 0), ((-3, -1), 1), ((-2, -1), 0), ((-1, -1), 1), ((0, -1), 2), ((1, -1), 0), ((2, -1), 0), ((-3, -2), 1), ((-2, -2), 1), ((-1, -2), 1), ((0, -2), 1), ((1, -2), 0), ((-3, -3), 1), ((-2, -3), 1), ((-1, -3), 1), ((0, -3), 1)]
-    # print(plus_action(t, 2, n))
     
     
     

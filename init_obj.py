@@ -117,3 +117,8 @@ def symetry_backslash(state: State) -> State:
     for cell, player in state:
         new_state.append(((-cell[1], -cell[0]), player))
     return new_state
+
+
+def state_to_tuple(state: State) -> tuple:
+    """Convert state to tuple."""
+    return tuple(sorted((tuple(cell), player) for cell, player in state))
