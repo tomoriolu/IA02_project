@@ -5,9 +5,6 @@
     "BackupFilename": "server.json",
     "ServerAddr": ":8080",
     "GridPossibleSizes": [
-        4,
-        5,
-        6,
-        7
+        6
     ]
 }
