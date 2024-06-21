@@ -1,20 +1,14 @@
 """
-    Partie Dodo du projet de IA02 P24 avec augustin le malin et juju la regu
+    Partie Dodo du projet de IA02 P24 avec Augustin et Julien
 """
 
 # import collections
 import random
 # import ast
 import time
-from init_obj import create_grid, state_to_grid2, grid_to_state2, symetry_60, \
+from init_obj import create_grid, state_to_grid, grid_to_state, symetry_60, \
     symetry_slash, symetry_backslash, state_to_tuple
 from def_types import Cell, Action, ActionGopher, Player, State, Strategy, Score, Time, Grid
-
-# from collections import defaultdict
-import numpy as np
-
-# Utilisation de collections pour conserver les évaluations précédentes
-from collections import deque
 
 
 def pprint(grid: Grid):
@@ -97,7 +91,7 @@ def player_box(grid: Grid, player: Player) -> list[Cell]:
 
 def legals_gopher(state: State, player: Player, n: int) -> list[ActionGopher]:
     "retourne la liste de coups possibles pour le joueur"
-    grid: Grid = state_to_grid2(state, n)
+    grid: Grid = state_to_grid(state, n)
     if player == 1:
         cell_player: list[Cell] = player_box(grid, 2)
     else:
@@ -134,9 +128,9 @@ def score_gopher(state: State, player: Player, n: int) -> int:
 
 
 def strategy_joueur(state: State, player: Player, n) -> ActionGopher:
-    "stratégie pour un joueur"
+    "stratégie pour un joueur humain"
     test: bool = False
-    grid: Grid = state_to_grid2(state, n)
+    grid: Grid = state_to_grid(state, n)
     action: ActionGopher
     print(f"À vous de jouer, joueur {player}")
     while not test:
@@ -171,36 +165,35 @@ def strategy_random_legal(state: State, player: Player, n) -> ActionGopher:
 
 def play_gopher(state: State, player: Player, action: ActionGopher, n: int) -> State:
     "fonction qui modifie le jeu"
-    grid: Grid = state_to_grid2(state, n)
+    grid: Grid = state_to_grid(state, n)
     grid[action[0]][action[1]] = player
-    return grid_to_state2(grid, n)
+    return grid_to_state(grid, n)
 
 
 def gopher(
-    state: State, strategy_1: Strategy, strategy_2: Strategy, n: int, debug: bool = False
+    state: State, strategy_1: Strategy, strategy_2: Strategy, n: int
 ) -> Score:
     "boucle de jeu"
-    if not debug:
-        state = play_gopher(state, 1, strategy_1(state, 1, n), n)
-        player: int = 2
-        fin: bool = False
-        while not fin:
-            # print("---------------------------")
-            if player == 1:
-                state = play_gopher(state, player, strategy_1(state, player, n), n)
-                # pprint(state_to_grid2(state, n))
-            if player == 2:
-                state = play_gopher(state, player, strategy_2(state, player, n), n)
-                # pprint(state_to_grid2(state, n))
-            player = 3 - player
-            if plus_action(state, player, n):
-                fin = True
-        result: int = score_gopher(state, player, n)
+    state = play_gopher(state, 1, strategy_1(state, 1, n), n)
+    player: int = 2
+    fin: bool = False
+    while not fin:
         # print("---------------------------")
-        print(f"Le vainqueur est le joueur {result}")
-        # pprint(state_to_grid2(state, n))
-        return result
+        if player == 1:
+            state = play_gopher(state, player, strategy_1(state, player, n), n)
+            # pprint(state_to_grid(state, n))
+        if player == 2:
+            state = play_gopher(state, player, strategy_2(state, player, n), n)
+            # pprint(state_to_grid(state, n))
+        player = 3 - player
+        if plus_action(state, player, n):
+            fin = True
+    result: int = score_gopher(state, player, n)
+    # print("---------------------------")
+    print(f"Le vainqueur est le joueur {result}")
+    # pprint(state_to_grid(state, n))
     return result
+
 
 
 
@@ -217,11 +210,11 @@ def evaluation2(state: State, n: int) -> float:
     evalJoueur2 : int = len(coups_joueur2)
     for cell1 in coups_joueur1:
         state_test1 : State = play_gopher(state, 1, cell1, n)
-        grid1 = state_to_grid2(state_test1, n)
+        grid1 = state_to_grid(state_test1, n)
         evalJoueur1 += 12 - len(adj_box_player(grid1, adj_box(grid1, [cell1], True), 2))
     for cell2 in coups_joueur2:
         state_test2 : State = play_gopher(state, 2, cell2, n)
-        grid2 = state_to_grid2(state_test2, n)
+        grid2 = state_to_grid(state_test2, n)
         evalJoueur2 += 12 - len(adj_box_player(grid2, adj_box(grid2, [cell2], True), 1))
     return (evalJoueur1 - evalJoueur2) / n**3
 
@@ -331,7 +324,7 @@ def strategy_negamax(state: State, player: Player, n: int) -> ActionGopher:
     "stratégie appelant l'algorithme negamax"
     alpha = float('-inf')
     beta = float('inf')
-    depth = 8
+    depth = 8 #ici pour modifier la profondeur
     _, best_action = negamax_action(state, player, depth, alpha, beta, n)
     return best_action
 
@@ -437,13 +430,6 @@ def strategy_negamax_alpha_beta(state: State, player: Player, n: int) -> ActionG
     _, best_action = negamax_alpha_beta(state, player, depth, alpha, beta, n)
     return best_action
 
-
-
-
-
-
-
-
 @memoize_cache3
 def negamax_indeterministe(state: State, player: Player, depth: int,
     alpha: float, beta: float, n: int) -> tuple[float, Action]:
@@ -480,18 +466,14 @@ def strategy_negamax_indeterministe(state: State, player: Player, n: int) -> Act
     _, best_action = negamax_indeterministe(state, player, depth, alpha, beta, n)
     return best_action
 
-
-
-
-
 def main() -> None:
     n = 4
     c = 0
     start_time = time.time()
-    for i in range(100):
-        # result = gopher(grid_to_state2(create_grid(n), n),
+    for i in range(100): #décommenter l'autre pour changer de joueur
+        # result = gopher(grid_to_state(create_grid(n), n),
             # strategy_negamax_alpha_beta, strategy_random_legal, n)
-        result = gopher(grid_to_state2(create_grid(n), n),
+        result = gopher(grid_to_state(create_grid(n), n),
             strategy_random_legal, strategy_negamax_alpha_beta, n)
         if result==1:
             c += 1
@@ -500,13 +482,6 @@ def main() -> None:
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Temps d'exécution : {execution_time} secondes")
-
-
-    # t = create_grid(n)
-    # p = play_gopher(grid_to_state2(t, n), 1, strategy_negamax_alpha_beta(grid_to_state2(t, n), 1, n), n)
-    # pprint(state_to_grid2(p, n))
-    # p = play_gopher(p, 2, strategy_first_legal())
-
 
 if __name__ == "__main__":
     main()

@@ -59,28 +59,7 @@ def size_state(state: State) -> int:
     return int(q // 2 + 1)
 
 
-def state_to_grid(state: State) -> Grid:
-    "permet de passer d'un objet State à un Grid"
-    n: int = int(size_state(state))
-    grid: Grid = create_grid(n)
-    for cell, player in state:
-        # print(cell)
-        # print(player)
-        grid[(cell[0])][(cell[1])] = player
-    return grid
-
-
-def grid_to_state(grid: Grid) -> State:
-    "permet de passer d'un objet Grid à un State"
-    state: State = []
-    for i, row in enumerate(grid):
-        for j, value in enumerate(row):
-            state.append(((i, j), value))
-    return state
-
-
-
-def state_to_grid2(state: State, n: int) -> Grid:
+def state_to_grid(state: State, n: int) -> Grid:
     "permet de passer d'un objet State à un Grid"
     grid: Grid = create_grid(n)
     for cell, player in state:
@@ -88,7 +67,7 @@ def state_to_grid2(state: State, n: int) -> Grid:
     return grid
 
 
-def grid_to_state2(grid: Grid, n: int) -> State:
+def grid_to_state(grid: Grid, n: int) -> State:
     "permet de passer d'un objet Grid à un State"
     state: State = []
     for i, row in enumerate(grid):
