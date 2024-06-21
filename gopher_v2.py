@@ -128,6 +128,37 @@ def score_gopher(state: State, player: Player, n: int) -> int:
             return 1
     return 0
 
+def play_gopher(state: State, player: Player, action: ActionGopher, n: int) -> State:
+    "fonction qui modifie le jeu"
+    grid: Grid = state_to_grid(state, n)
+    grid[action[0]][action[1]] = player
+    return grid_to_state(grid, n)
+
+
+def gopher(
+    state: State, strategy_1: Strategy, strategy_2: Strategy, n: int
+) -> Score:
+    "boucle de jeu"
+    state = play_gopher(state, 1, strategy_1(state, 1, n), n)
+    player: int = 2
+    fin: bool = False
+    while not fin:
+        # print("---------------------------")
+        if player == 1:
+            state = play_gopher(state, player, strategy_1(state, player, n), n)
+            # pprint(state_to_grid(state, n))
+        if player == 2:
+            state = play_gopher(state, player, strategy_2(state, player, n), n)
+            # pprint(state_to_grid(state, n))
+        player = 3 - player
+        if plus_action(state, player, n):
+            fin = True
+    result: int = score_gopher(state, player, n)
+    # print("---------------------------")
+    print(f"Le vainqueur est le joueur {result}")
+    # pprint(state_to_grid(state, n))
+    return result
+
 
 def strategy_joueur(state: State, player: Player, n) -> ActionGopher:
     "stratégie pour un joueur humain"
@@ -165,41 +196,6 @@ def strategy_random_legal(state: State, player: Player, n) -> ActionGopher:
     return choix
 
 
-def play_gopher(state: State, player: Player, action: ActionGopher, n: int) -> State:
-    "fonction qui modifie le jeu"
-    grid: Grid = state_to_grid(state, n)
-    grid[action[0]][action[1]] = player
-    return grid_to_state(grid, n)
-
-
-def gopher(
-    state: State, strategy_1: Strategy, strategy_2: Strategy, n: int
-) -> Score:
-    "boucle de jeu"
-    state = play_gopher(state, 1, strategy_1(state, 1, n), n)
-    player: int = 2
-    fin: bool = False
-    while not fin:
-        # print("---------------------------")
-        if player == 1:
-            state = play_gopher(state, player, strategy_1(state, player, n), n)
-            # pprint(state_to_grid(state, n))
-        if player == 2:
-            state = play_gopher(state, player, strategy_2(state, player, n), n)
-            # pprint(state_to_grid(state, n))
-        player = 3 - player
-        if plus_action(state, player, n):
-            fin = True
-    result: int = score_gopher(state, player, n)
-    # print("---------------------------")
-    print(f"Le vainqueur est le joueur {result}")
-    # pprint(state_to_grid(state, n))
-    return result
-
-
-
-
-
 def evaluation(state: State, player, n: int) -> float:
     "fonction d'évaluation pour l'algorithme negamax"
     return len(legals_gopher(state, player, n)) - len(legals_gopher(state, 3 - player, n)) + score_gopher(state, player, n)*10000
@@ -219,10 +215,6 @@ def evaluation2(state: State, n: int) -> float:
         grid2 = state_to_grid(state_test2, n)
         evalJoueur2 += 12 - len(adj_box_player(grid2, adj_box(grid2, [cell2], True), 1))
     return (evalJoueur1 - evalJoueur2) / n**3
-
-
-def evaluation3(state: State, player: Player, n: int) -> float:
-    return - score_gopher(state, player, n)*100 + len(legals_gopher(state, player, n)) - len(legals_gopher(state, 3-player, n))
 
 
 def memoize_cache(f):
@@ -275,61 +267,6 @@ def memoize_cache3(f):
         return result
     return g
 
-def cache(f):
-    cache = {}
-    def g(state, player, depth, alpha, beta, n):
-        state2 = state_to_tuple(state)
-        if state2 in cache:
-            return cache[state2]
-        result = f(state, player, depth, alpha, beta, n)
-        cache[state2] = result
-        return result
-    return g
-
-@cache
-def negamax(state, player, depth, alpha: float, beta: float, n):
-    if depth == 0 or final_gopher(state, player, n):
-        # if final_gopher(state, player, n):
-        #     if player == 1:
-        #         score = -1
-        #     else:
-        #         score = 1
-        # else:
-        score = evaluation3(state, player, n)
-        return score
-    best_score = float('-inf')
-    for action_possible in legals_gopher(state, player, n):
-        new_state = play_gopher(state, player, action_possible, n)
-        score = - negamax(new_state, 3 - player, depth - 1, -beta, -alpha, n)
-        best_score = max(score, best_score)
-        alpha = max(alpha, score)
-        if alpha >= beta:
-            break
-    return best_score
-
-
-def negamax_action(state: State, player: Player, depth: int,
-    alpha: float, beta: float, n: int) -> tuple[float, Action]:
-    "algorithme negamax"
-    best_score = float('-inf')
-    best_action = None
-    for action_possible in legals_gopher(state, player, n):
-        new_state = play_gopher(state, player, action_possible, n)
-        score = - negamax(new_state, 3 - player, depth - 1, -beta, -alpha, n)
-        if score > best_score:
-            best_score = score
-            best_action = action_possible
-    return best_score, best_action
-
-
-def strategy_negamax(state: State, player: Player, n: int) -> ActionGopher:
-    "stratégie appelant l'algorithme negamax"
-    alpha = float('-inf')
-    beta = float('inf')
-    depth = 8 #ici pour modifier la profondeur
-    _, best_action = negamax_action(state, player, depth, alpha, beta, n)
-    return best_action
-
 
 
 def cache_alpha_beta(f):
@@ -344,9 +281,6 @@ def cache_alpha_beta(f):
             cache[state2] = result        
         return result
     return g
-
-
-
 
 
 
@@ -389,7 +323,6 @@ def strategy_alphabeta_classique(grid: State, player: Player, n: int) -> Action:
 
 
 
-
 def cache_negamax_alpha_beta(f):
     cache = {}
     def g(state, player, depth, alpha, beta, n):
@@ -401,8 +334,6 @@ def cache_negamax_alpha_beta(f):
             cache[state_key] = result
         return result
     return g
-
-
 
 @cache_negamax_alpha_beta
 def negamax_alpha_beta(state: State, player: Player, depth: int,

@@ -52,11 +52,11 @@ def create_grid(n: int = 7) -> Grid:
     return grid
 
 
-def size_state(state: State) -> int:
-    "détermine la taille d'un objet State pour pouvoir passer d'un State à un Grid"
-    l = len(state)
-    q = math.sqrt(l)
-    return int(q // 2 + 1)
+# def size_state(state: State) -> int:
+#     "détermine la taille d'un objet State pour pouvoir passer d'un State à un Grid"
+#     l = len(state)
+#     q = math.sqrt(l)
+#     return int(q // 2 + 1)
 
 
 def state_to_grid(state: State, n: int) -> Grid:

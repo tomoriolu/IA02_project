@@ -116,6 +116,42 @@ def score_dodo(state: State, n: int) -> int:
         return -1
     return 0
 
+def play_dodo(state: State, player: Player, action: ActionDodo, n: int) -> State:
+    "fonction qui modifie le jeu"
+    grid: Grid = state_to_grid2(state, n)
+    grid[action[0][0]][action[0][1]] = 0
+    grid[action[1][0]][action[1][1]] = player
+    return grid_to_state2(grid, n)
+
+def dodo(
+    state: State, strategy_1: Strategy, strategy_2: Strategy, n: int, debug: bool = False
+) -> Score:
+    "boucle de jeu"
+    if not debug:
+        player: int = 1
+        fin: bool = False
+        while not fin:
+            #print("---------------------------")
+            #pprint(state_to_grid(state))
+            #time.sleep(1)
+            if not plus_action(state, player, n):
+                if player == 1:
+                    state = play_dodo(state, player, strategy_1(state, player, n), n)
+                else:
+                    state = play_dodo(state, player, strategy_2(state, player, n), n)
+                player = 3 - player
+            else:
+                fin = True
+            
+        result: int = score_dodo(state, n)
+        #print("---------------------------")
+        # if result == 0:
+        #     print("Match nul")
+        # else:
+        print(f"Le vainqueur est le joueur {result}")
+        # pprint(state_to_grid2(state, n))
+        return result
+    return result
 
 def strategy_joueur(state: State, player: Player, n: int) -> ActionDodo:
     "stratégie pour un joueur"
@@ -156,14 +192,6 @@ def strategy_random(state: State, player: Player, n: int) -> ActionDodo:
     choix: ActionDodo = coups[random.randint(0,len(coups)-1)]
     # print(f"Choix du joueur {player} : {choix}")
     return choix
-
-
-def play_dodo(state: State, player: Player, action: ActionDodo, n: int) -> State:
-    "fonction qui modifie le jeu"
-    grid: Grid = state_to_grid2(state, n)
-    grid[action[0][0]][action[0][1]] = 0
-    grid[action[1][0]][action[1][1]] = player
-    return grid_to_state2(grid, n)
 
 def eval_coups(state: State, n: int) -> int: 
     evalJoueur1 : int = len(legals_dodo2(state, 1, n))
@@ -225,8 +253,6 @@ def eval_coups3(state: State, n: int, p: Player) -> int:
     coups_adversaire = legals_dodo2(state, 3 - p, n)
     eval_j_actuel = len(coups_j_actuel)
     eval_j_adverse = len(coups_adversaire)
-
-    # Évaluer les mouvements bloqués par les deux joueurs
     for action in coups_j_actuel:
         from_cell, to_cell = action
         for (d_row, d_col), _ in directions[3 - p]:
@@ -240,44 +266,12 @@ def eval_coups3(state: State, n: int, p: Player) -> int:
             new_row, new_col = to_cell[0] + d_row, to_cell[1] + d_col
             if not is_valid_move(grid, (new_row, new_col)):
                 eval_j_actuel -= 1
-
-    # Normalisation des scores pour équilibrer
     score_actuel = eval_j_actuel
     score_adverse = eval_j_adverse
     if p==2:
         return score_actuel - score_adverse
     else:
         return -(score_actuel - score_adverse)
-
-def dodo(
-    state: State, strategy_1: Strategy, strategy_2: Strategy, n: int, debug: bool = False
-) -> Score:
-    "boucle de jeu"
-    if not debug:
-        player: int = 1
-        fin: bool = False
-        while not fin:
-            #print("---------------------------")
-            #pprint(state_to_grid(state))
-            #time.sleep(1)
-            if not plus_action(state, player, n):
-                if player == 1:
-                    state = play_dodo(state, player, strategy_1(state, player, n), n)
-                else:
-                    state = play_dodo(state, player, strategy_2(state, player, n), n)
-                player = 3 - player
-            else:
-                fin = True
-            
-        result: int = score_dodo(state, n)
-        #print("---------------------------")
-        # if result == 0:
-        #     print("Match nul")
-        # else:
-        print(f"Le vainqueur est le joueur {result}")
-        # pprint(state_to_grid2(state, n))
-        return result
-    return result
 
 def alphabeta_classique(grid: State, player: Player, n: int, alpha: float = float('-inf'), beta: float =float('inf'), depth: int = 4) -> tuple[Score, Action]:
     if depth == 0 or plus_action(grid, player, n):
