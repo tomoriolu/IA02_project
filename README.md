@@ -67,8 +67,17 @@ Nous avons laissé nos 3 essais de fonctions de caches différentes
 main : nous avons fait une boucle pour pouvoir jouer plusieurs parties et obtenir un pourcentage de victoire
 
 
-### Test des stratégies
-Pour tester nos stratégies, il suffit de changer la stratégie associée à STRAT_GOPHER ou STRAT_DODO et de lancer le serveur puis une partie.
+## Lancement du programme
+Pour lancer le server :
+```./gndserver-1.0.2-linux -game dodo -rcolor blue -random``` pour Dodo (remplacer blue par red pour joueur en deuxième)
+```./gndserver-1.0.2-linux -game gopher -rcolor blue -random``` pour Gopher 
+
+Pour lancer une partie :
+- python3 test_client.py 1 t t
+Pour relancer une autre partie, changer le numéro ou supprimer le fichier server.json et relancer le server.
+
+
+Pour tester nos stratégies, il suffit de changer la stratégie associée à STRAT_GOPHER ou STRAT_DODO dans test_client.py et de lancer le serveur puis une partie.
 
 
 ## Bilan :
