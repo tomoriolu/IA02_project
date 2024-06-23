@@ -3,11 +3,8 @@
 """
 
 from typing import Callable, Union
-import math
 
-# Types de base utilisés par l'arbitre
-Environment = ...  # Ensemble des données utiles (cache, état de jeu...) pour
-# que votre IA puisse jouer (objet, dictionnaire, autre...)
+
 Cell = tuple[int, int]
 ActionGopher = Cell
 ActionDodo = tuple[Cell, Cell]  # case de départ -> case d'arrivée
@@ -18,16 +15,19 @@ Score = int
 Time = int
 Strategy = Callable[[State, Player], Action]
 Grid = list[list[int]]
-# state = []
-cells_joueur_2: list[Cell] = []
 
-def coordo(action: Action, n: int, game: str) -> State:
+
+def coordo(action: Action, n: int, game: str) -> Action:
+    "conversion en coordonnées du serveur"
     if game == 'gopher':
-        action2 : Action = (action[1]-n+1, n-1-action[0])
-    elif game == 'dodo':
-        action2: Action = ((action[0][1]-n+1, n-1-action[0][0]), (action[1][1]-n+1, n-1-action[1][0]))
-    return action2
-
+        actiongopher : ActionGopher = (action[1] - n + 1, n - 1 - action[0])
+        return actiongopher
+    if game == 'dodo':
+        start : tuple[int, int] = (action[0][1] - n + 1, n - 1 - action[0][0])
+        end : tuple[int, int] = (action[1][1] - n + 1, n - 1 - action[1][0])
+        actiondodo : ActionDodo = (start, end)
+        return actiondodo
+    return None
 
 
 def create_grid(n: int = 7) -> Grid:
@@ -78,6 +78,7 @@ def grid_to_state(grid: Grid, n: int) -> State:
 
 
 def symetry_60(state: State) -> State:
+    "tentative de fonction de symétrie"
     new_state: State = []
     for cell, player in state:
         new_state.append(((cell[1], -cell[0]+cell[1]), player))
@@ -85,6 +86,7 @@ def symetry_60(state: State) -> State:
 
 
 def symetry_slash(state: State) -> State:
+    "tentative de fonction de symétrie"
     new_state: State = []
     for cell, player in state:
         new_state.append(((cell[1], cell[0]), player))
@@ -92,6 +94,7 @@ def symetry_slash(state: State) -> State:
 
 
 def symetry_backslash(state: State) -> State:
+    "tentative de fonction de symétrie"
     new_state: State = []
     for cell, player in state:
         new_state.append(((-cell[1], -cell[0]), player))
@@ -99,9 +102,11 @@ def symetry_backslash(state: State) -> State:
 
 
 def state_to_tuple_alpha_beta(state: State, alpha: int, beta: int) -> tuple:
+    "transforme un state en tuple avec alphabeta pour le hashage"
     state_tuple = tuple(sorted((tuple(cell), player) for cell, player in state))
     return (state_tuple, alpha, beta)
 
 
 def state_to_tuple(state: State) -> tuple:
+    "transforme un state en tuple pour le hashage"
     return tuple(sorted((tuple(cell), player) for cell, player in state))
