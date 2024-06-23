@@ -1,18 +1,16 @@
 #!/usr/bin/python3
 
-import ast
 import argparse
 from typing import Dict, Any
 from gndclient import start, Action, Score, Player, State, Time, DODO_STR, GOPHER_STR
-from def_types import Cell, Action, ActionDodo, ActionGopher, Player, State, Strategy, Score, Time, Grid
-from gopher_v2 import strategy_negamax_alpha_beta, strategy_negamax_indeterministe
-from dodo_v2 import strategy_alphabeta_indeterministe_dodo, strategy_negamax_alpha_beta_dodo
-from gopher_test import strategy_mcts
-from dodo_mc import strategy_monte_carlo
+from def_types import Action, Player, State, Score, Time
+from gopher import strategy_negamax_alpha_beta_gopher, strategy_alphabeta_classique_gopher, strategy_negamax_indeterministe_gopher
+from dodo import strategy_alphabeta_indeterministe_dodo, strategy_negamax_alpha_beta_dodo, strategy_monte_carlo, strategy_alphabeta_cache_dodo, strategy_alphabeta_classique_dodo
 from init_obj import coordo
-from time import sleep
 
 Environment = Dict[str, Any]
+STRAT_GOPHER = strategy_negamax_alpha_beta_gopher
+STRAT_DODO = strategy_monte_carlo
 
 
 def initialize(
@@ -22,9 +20,9 @@ def initialize(
     dico["size"] = hex_size
     dico["game"] = game
     if game == GOPHER_STR :
-        dico["strat"] = strategy_negamax_alpha_beta
+        dico["strat"] = STRAT_GOPHER
     elif game == DODO_STR:
-        dico["strat"] = strategy_monte_carlo
+        dico["strat"] = STRAT_DODO
     print(f"Vous êtes le joueur {player}")
     print(f"Temps total : {total_time}")
     return dico

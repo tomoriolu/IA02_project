@@ -5,10 +5,10 @@ import argparse
 from typing import Dict, Any
 from old_serv.gndclient import start, Action, Score, Player, State, Time, DODO_STR, GOPHER_STR
 from def_types import Cell, Action, ActionDodo, ActionGopher, Player, State, Strategy, Score, Time, Grid
-from gopher_v2 import strategy_negamax_alpha_beta, strategy_negamax_indeterministe
-from dodo_v2 import strategy_alphabeta_indeterministe_dodo, strategy_negamax_alpha_beta_dodo
-from gopher_test import strategy_mcts
-from dodo_mc import strategy_monte_carlo
+from gopher import strategy_negamax_alpha_beta, strategy_negamax_indeterministe
+from dodo import strategy_alphabeta_indeterministe_dodo, strategy_negamax_alpha_beta_dodo
+from old_serv.gopher_test import strategy_mcts
+from old_serv.dodo_mc import strategy_monte_carlo
 from init_obj import coordo
 from time import sleep
 
